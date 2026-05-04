@@ -63,3 +63,24 @@ exports.login = async (req, res) => {
     token
   });
 };
+
+//Profile API//
+exports.profile = async (req, res) => {
+  const user = await User.findById(req.user).select("-password");
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  res.json({
+    message: "Profile fetched successfully",
+    user
+  });
+};
+
+//Logout API//
+exports.logout = (req, res) => {
+  res.json({
+    message: "Logout successful"
+  });
+};
