@@ -1,11 +1,24 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 import LaptopCard from "../components/Laptops/LaptopCard";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import Header from "../components/Header";
+import { useState } from "react";
 
-function FilterSection({ title, children }: { title: String, children: React.ReactNode }) {
+function FilterSection({
+  title,
+  children,
+}: {
+  title: String;
+  children: React.ReactNode;
+}) {
   return (
     <div className="pb-6 border-b border-gray-200">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">
@@ -17,7 +30,13 @@ function FilterSection({ title, children }: { title: String, children: React.Rea
   );
 }
 
-function FilterCheckbox({ label, checked = false }: { label: String, checked?: boolean }) {
+function FilterCheckbox({
+  label,
+  checked = false,
+}: {
+  label: String;
+  checked?: boolean;
+}) {
   return (
     <div className="flex items-center gap-3">
       <Checkbox checked={checked} />
@@ -30,6 +49,8 @@ function FilterCheckbox({ label, checked = false }: { label: String, checked?: b
 }
 
 const Laptops = () => {
+  const [showFilters, setShowFilters] = useState(false);
+
   const products = [
     {
       id: 1,
@@ -88,18 +109,59 @@ const Laptops = () => {
   ];
 
   return (
-    <div className="min-h-screen py-6">
+    <div className="min-h-screen py-6 px-4 sm:px-6 xl:px-0">
 
       <Header
         title="Premium Laptops"
         subtitle="Discover synchronized performance and design."
       />
 
-      <div className="mt-12 flex gap-6">
+      {/* Mobile Filter Button */}
+      <div className="lg:hidden mt-8 mb-4">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => setShowFilters(true)}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Filters
+        </Button>
+      </div>
+
+      <div className="mt-6 flex gap-6">
+
+        {/* Mobile Overlay */}
+        {showFilters && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            onClick={() => setShowFilters(false)}
+          />
+        )}
 
         {/* Sidebar */}
-        <aside className="w-64 shrink-0">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-8">
+        <aside
+          className={`
+            fixed lg:static top-0 left-0 h-screen lg:h-auto
+            w-72 lg:w-64 bg-white z-50 lg:z-auto
+            p-6 lg:p-0 overflow-y-auto
+            transition-transform duration-300
+            ${showFilters ? "translate-x-0" : "-translate-x-full"}
+            lg:translate-x-0 shrink-0
+          `}
+        >
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between mb-8 lg:hidden">
+            <h1 className="text-xl font-semibold">
+              Filters
+            </h1>
+
+            <button onClick={() => setShowFilters(false)}>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Desktop Header */}
+          <h1 className="hidden lg:block text-2xl font-semibold text-gray-900 mb-8">
             Filters
           </h1>
 
@@ -134,19 +196,21 @@ const Laptops = () => {
         </aside>
 
         {/* Content */}
-        <main className="flex-1">
+        <main className="flex-1 min-w-0">
 
           {/* Top Bar */}
-          <div className="bg-white rounded-xl px-6 py-4 flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <p className="text-sm text-gray-500">
               Showing 24 premium titles
             </p>
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">Sort by:</span>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                Sort by:
+              </span>
 
               <Select defaultValue="newest">
-                <SelectTrigger className="w-45">
+                <SelectTrigger className="w-full sm:w-52">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
 
@@ -172,14 +236,14 @@ const Laptops = () => {
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {products.map((product) => (
               <LaptopCard key={product.id} product={product} />
             ))}
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-center gap-2 mt-12">
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-12">
             <Button
               variant="outline"
               size="icon"
@@ -200,7 +264,9 @@ const Laptops = () => {
               3
             </Button>
 
-            <span className="text-gray-400 px-1">...</span>
+            <span className="text-gray-400 px-1">
+              ...
+            </span>
 
             <Button
               variant="outline"
@@ -213,7 +279,7 @@ const Laptops = () => {
         </main>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Laptops
+export default Laptops;
