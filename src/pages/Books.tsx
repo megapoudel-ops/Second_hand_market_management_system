@@ -146,7 +146,7 @@ const Books = () => {
                             w-72 lg:w-64 bg-white z-50 lg:z-auto
                             p-6 lg:p-0 overflow-y-auto
                             transition-transform duration-300
-                            Rs. {showFilters ? "translate-x-0" : "-translate-x-full"}
+                            ${showFilters ? "translate-x-0" : "-translate-x-full"}
                             lg:translate-x-0 shrink-0
                         `}
                     >
