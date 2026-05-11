@@ -70,7 +70,7 @@ const Home = () => {
           <div className="xl:w-1/2 w-full flex justify-center">
             <img
               className="w-full h-72 sm:h-96 xl:h-128 object-cover rounded-3xl xl:rotate-3"
-              src={HeroImage}
+              src="https://images.unsplash.com/photo-1565630916779-e303be97b6f5?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Hero"
             />
           </div>

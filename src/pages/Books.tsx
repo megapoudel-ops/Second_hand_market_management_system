@@ -63,28 +63,28 @@ const Books = () => {
     const products = [
         {
             id: 1,
-            title: "The Minimalist Mindset",
-            author: "Elena Vance",
+            title: "Atomic Habits",
+            author: "James Clear",
             price: "Rs. 34.99",
             image:
-                "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800&auto=format&fit=crop",
+                "https://cultivatewhatmatters.com/cdn/shop/articles/atomic-habits.jpg?v=1624827508",
             featured: true,
         },
         {
             id: 2,
-            title: "Fluid Architecture",
-            author: "Marcus Thorne",
+            title: "The Art of Seduction",
+            author: "Robert Green",
             price: "Rs. 89.00",
             image:
-                "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800&auto=format&fit=crop",
+                "https://static-01.daraz.com.np/p/8e2dd76b6e94043075c53a7fca216779.jpg",
         },
         {
             id: 3,
-            title: "Systems of Nature",
-            author: "Dr. Sarah Laine",
+            title: "The Art Of War",
+            author: "Sun Tzu",
             price: "Rs. 28.50",
             image:
-                "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
+                "https://www.bookgeeks.in/wp-content/uploads/2022/11/The-Art-of-War-by-Sun-Tzu-Book.jpg",
         },
         {
             id: 4,
@@ -97,10 +97,10 @@ const Books = () => {
         {
             id: 5,
             title: "The Art of Negotiation",
-            author: "Robert Sterling",
+            author: "Peter Oliver",
             price: "Rs. 52.00",
             image:
-                "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=800&auto=format&fit=crop",
+                "https://m.media-amazon.com/images/I/81uMrgXQb8L._UF1000,1000_QL80_.jpg",
         },
         {
             id: 6,
