@@ -60,7 +60,7 @@ const Navbar = () => {
                         <ShoppingCart className='size-5' strokeWidth={2.5} />
                     </Link>
 
-                    <User className='text-black border rounded-full p-1 size-8' />
+                    <Link to={'/login'}><User className='text-black border rounded-full p-1 size-8' /></Link>
 
                     <button className='text-sm bg-green-900 text-white rounded-md px-4 py-2 hover:opacity-90 transition'>
                         Add Post

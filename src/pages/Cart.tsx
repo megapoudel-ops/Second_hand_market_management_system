@@ -67,7 +67,7 @@ export default function Cart() {
                                 </div>
 
                                 <p className="text-lg font-medium">
-                                    $1,899.00
+                                    Rs. 1,899.00
                                 </p>
                             </div>
                         </div>
@@ -124,7 +124,7 @@ export default function Cart() {
                                 </div>
 
                                 <p className="text-lg font-medium">
-                                    $1,350.00
+                                    Rs. 1,350.00
                                 </p>
                             </div>
                         </div>
@@ -151,7 +151,7 @@ export default function Cart() {
 
                         <div className="flex justify-between">
                             <span>Subtotal</span>
-                            <span>$3,249.00</span>
+                            <span>Rs. 3,249.00</span>
                         </div>
 
                         <div className="flex justify-between">
@@ -164,7 +164,7 @@ export default function Cart() {
 
                         <div className="flex justify-between">
                             <span>Tax</span>
-                            <span>$268.05</span>
+                            <span>Rs. 268.05</span>
                         </div>
                     </div>
 
@@ -172,7 +172,7 @@ export default function Cart() {
 
                     <div className="flex justify-between font-semibold text-lg">
                         <span>Total</span>
-                        <span>$3,517.05</span>
+                        <span>Rs. 3,517.05</span>
                     </div>
 
                     <button

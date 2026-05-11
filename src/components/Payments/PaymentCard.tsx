@@ -15,7 +15,7 @@ export default function PaymentCard() {
                     </p>
 
                     <h1 className="mt-2 text-5xl font-medium tracking-tight">
-                        $2,450.82
+                        Rs. 1,200
                     </h1>
                 </div>
 
@@ -32,7 +32,7 @@ export default function PaymentCard() {
                         Pending
                     </p>
 
-                    <h3 className="mt-1 text-xl font-medium">$142.00</h3>
+                    <h3 className="mt-1 text-xl font-medium">Rs. 142.00</h3>
                 </div>
 
                 <div className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">

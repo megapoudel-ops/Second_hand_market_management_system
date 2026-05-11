@@ -50,14 +50,14 @@ const Home = () => {
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
               <Link
-                to="/categories"
+                to="/laptops"
                 className="bg-green-900 text-white px-6 py-3 rounded-lg text-sm font-medium hover:opacity-90 transition"
               >
                 Explore Marketplace
               </Link>
 
               <Link
-                to="/about"
+                to="/"
                 className="text-(--primary-color) text-sm font-medium flex items-center gap-2"
               >
                 Learn More
