@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 function App() {
   return (
     <BrowserRouter>
-      <div className="w-7xl mx-auto">
+      <div className="xl:w-7xl w-full mx-auto">
         <Navbar />
         <AppRoutes />
         <Footer />

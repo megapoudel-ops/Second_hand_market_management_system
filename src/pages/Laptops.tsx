@@ -56,7 +56,7 @@ const Laptops = () => {
       id: 1,
       title: 'MacBook Pro 14" M3',
       description: "16GB RAM, 512GB SSD - Space Black",
-      price: "$1,999.00",
+      price: "Rs. 1,999.00",
       rating: 4.9,
       image:
         "https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
@@ -65,7 +65,7 @@ const Laptops = () => {
       id: 2,
       title: "Dell XPS 15 9530",
       description: "Core i9, 32GB RAM, RTX 4060",
-      price: "$2,449.00",
+      price: "Rs. 2,449.00",
       rating: 4.8,
       image:
         "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1200&auto=format&fit=crop",
@@ -74,7 +74,7 @@ const Laptops = () => {
       id: 3,
       title: "ASUS ROG Zephyrus G14",
       description: "Ryzen 9, 16GB, RTX 4070 - Eclipse Gray",
-      price: "$1,699.00",
+      price: "Rs. 1,699.00",
       rating: 4.7,
       image:
         "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop",
@@ -83,7 +83,7 @@ const Laptops = () => {
       id: 4,
       title: "Lenovo ThinkPad X1 Carbon",
       description: "Core i7, 32GB RAM, 1TB SSD",
-      price: "$1,850.00",
+      price: "Rs. 1,850.00",
       rating: 4.9,
       image:
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop",
@@ -92,7 +92,7 @@ const Laptops = () => {
       id: 5,
       title: "Razer Blade 16",
       description: "Dual-mode Mini-LED, RTX 4080",
-      price: "$3,299.00",
+      price: "Rs. 3,299.00",
       rating: 4.6,
       image:
         "https://images.unsplash.com/photo-1504707748692-419802cf939d?q=80&w=1200&auto=format&fit=crop",
@@ -101,7 +101,7 @@ const Laptops = () => {
       id: 6,
       title: 'MacBook Air 15" M3',
       description: "8-core CPU, 10-core GPU, 256GB",
-      price: "$1,299.00",
+      price: "Rs. 1,299.00",
       rating: 4.8,
       image:
         "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop",
@@ -145,7 +145,7 @@ const Laptops = () => {
             w-72 lg:w-64 bg-white z-50 lg:z-auto
             p-6 lg:p-0 overflow-y-auto
             transition-transform duration-300
-            ${showFilters ? "translate-x-0" : "-translate-x-full"}
+            Rs. {showFilters ? "translate-x-0" : "-translate-x-full"}
             lg:translate-x-0 shrink-0
           `}
         >
@@ -181,8 +181,8 @@ const Laptops = () => {
                 />
 
                 <div className="flex justify-between mt-2 text-xs text-gray-500">
-                  <span>$500</span>
-                  <span>$5,000+</span>
+                  <span>Rs. 500</span>
+                  <span>Rs. 5,000+</span>
                 </div>
               </div>
             </FilterSection>

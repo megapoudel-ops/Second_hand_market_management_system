@@ -9,6 +9,7 @@ import Books from "../pages/Books";
 import Cart from "../pages/Cart";
 import Notifications from "../pages/Notifications";
 import NotFound from "../pages/NotFound";
+import Furniture from "../pages/Furniture";
 
 export default function AppRoutes() {
   return (
@@ -21,6 +22,7 @@ export default function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/books" element={<Books />} />
       <Route path="/cart" element={<Cart />} />
+      <Route path="/furniture" element={<Furniture />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -65,7 +65,7 @@ const Books = () => {
             id: 1,
             title: "The Minimalist Mindset",
             author: "Elena Vance",
-            price: "$34.99",
+            price: "Rs. 34.99",
             image:
                 "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800&auto=format&fit=crop",
             featured: true,
@@ -74,7 +74,7 @@ const Books = () => {
             id: 2,
             title: "Fluid Architecture",
             author: "Marcus Thorne",
-            price: "$89.00",
+            price: "Rs. 89.00",
             image:
                 "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800&auto=format&fit=crop",
         },
@@ -82,7 +82,7 @@ const Books = () => {
             id: 3,
             title: "Systems of Nature",
             author: "Dr. Sarah Laine",
-            price: "$28.50",
+            price: "Rs. 28.50",
             image:
                 "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
         },
@@ -90,7 +90,7 @@ const Books = () => {
             id: 4,
             title: "Digital Design Ethos",
             author: "Julian Wright",
-            price: "$45.00",
+            price: "Rs. 45.00",
             image:
                 "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=800&auto=format&fit=crop",
         },
@@ -98,7 +98,7 @@ const Books = () => {
             id: 5,
             title: "The Art of Negotiation",
             author: "Robert Sterling",
-            price: "$52.00",
+            price: "Rs. 52.00",
             image:
                 "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=800&auto=format&fit=crop",
         },
@@ -106,7 +106,7 @@ const Books = () => {
             id: 6,
             title: "Future Education",
             author: "Clara Moss",
-            price: "$19.99",
+            price: "Rs. 19.99",
             image:
                 "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=800&auto=format&fit=crop",
         },
@@ -146,7 +146,7 @@ const Books = () => {
                             w-72 lg:w-64 bg-white z-50 lg:z-auto
                             p-6 lg:p-0 overflow-y-auto
                             transition-transform duration-300
-                            ${showFilters ? "translate-x-0" : "-translate-x-full"}
+                            Rs. {showFilters ? "translate-x-0" : "-translate-x-full"}
                             lg:translate-x-0 shrink-0
                         `}
                     >
@@ -189,8 +189,8 @@ const Books = () => {
                                     />
 
                                     <div className="flex justify-between mt-2 text-xs text-gray-500">
-                                        <span>$0</span>
-                                        <span>$200+</span>
+                                        <span>Rs. 0</span>
+                                        <span>Rs. 200+</span>
                                     </div>
                                 </div>
                             </FilterSection>
