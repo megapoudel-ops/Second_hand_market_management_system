@@ -20,36 +20,64 @@ const Home = () => {
   ]
 
   return (
-    <div className="w-full">
-      <div className="h-screen flex flex-col justify-center gap-36">
+    <div className="w-full px-6 xl:px-0">
+
+      {/* Hero + Features Wrapper */}
+      <div className="flex flex-col gap-20 xl:min-h-screen xl:justify-center">
 
         {/* Hero Section */}
-        <div className='flex items-center justify-between w-full gap-12'>
-          <div className="flex flex-col items-start gap-4">
-            <h3 className="text-(--primary-color) font-medium uppercase tracking-widest text-sm">
+        <div className="flex flex-col xl:flex-row items-center justify-between gap-12 mt-10 xl:mt-0">
+
+          {/* Left Content */}
+          <div className="flex flex-col items-start gap-5 xl:w-1/2 w-full">
+            <h3 className="text-(--primary-color) font-medium uppercase tracking-widest text-xs sm:text-sm">
               sustainable commerce
             </h3>
-            <h1 className="text-4xl font-semibold">
-              Give Tech and Home a <span className="text-(--primary-color)">Second</span> Life.
+
+            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-semibold leading-tight">
+              Give Tech and Home a{" "}
+              <span className="text-(--primary-color)">
+                Second
+              </span>{" "}
+              Life.
             </h1>
-            <p className="text-neutral-600 text-sm">
-              A curated marketplace for pre-owned premium goods. Verified quality, fluid payments, and the efficiency of modern trade.
+
+            <p className="text-neutral-600 text-sm sm:text-base max-w-xl leading-relaxed">
+              A curated marketplace for pre-owned premium goods.
+              Verified quality, fluid payments, and the efficiency
+              of modern trade.
             </p>
-            <div className="flex items-center gap-2">
-              <button></button>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
+              <Link
+                to="/categories"
+                className="bg-green-900 text-white px-6 py-3 rounded-lg text-sm font-medium hover:opacity-90 transition"
+              >
+                Explore Marketplace
+              </Link>
+
+              <Link
+                to="/about"
+                className="text-(--primary-color) text-sm font-medium flex items-center gap-2"
+              >
+                Learn More
+                <ArrowRight className="size-4" />
+              </Link>
             </div>
           </div>
-          <div className="mt-12 w-1/2">
+
+          {/* Hero Image */}
+          <div className="xl:w-1/2 w-full flex justify-center">
             <img
-              className="w-full h-104 object-cover rounded-3xl rounded-r-none rotate-3"
+              className="w-full h-72 sm:h-96 xl:h-128 object-cover rounded-3xl xl:rotate-3"
               src={HeroImage}
-              alt="Laptop Image"
+              alt="Hero"
             />
           </div>
         </div>
 
         {/* Features Section */}
-        <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-6 w-full">
           {FeatureImages.map((feature, index) => (
             <FeatureItem
               key={index}
@@ -60,47 +88,57 @@ const Home = () => {
       </div>
 
       {/* Shop By Category */}
-      <div className="flex flex-col items-start gap-6">
-        <h1 className="text-3xl font-medium">Shop By Category</h1>
-        <div className="flex items-center justify-between w-full text-sm">
-          <h5 className="text-gray-600 -mt-5">
-            Expertly curated collections for your lifestyle.
-          </h5>
+      <div className="flex flex-col items-start gap-8 mt-20">
 
-          <Link to={'/categories'}
-            className="font-medium flex items-center gap-2 text-(--primary-color)"
+        {/* Heading */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between w-full gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-semibold">
+              Shop By Category
+            </h1>
+
+            <h5 className="text-gray-600 text-sm sm:text-base mt-2">
+              Expertly curated collections for your lifestyle.
+            </h5>
+          </div>
+
+          <Link
+            to="/categories"
+            className="font-medium flex items-center gap-2 text-(--primary-color) text-sm"
           >
             View All Categories
             <ArrowRight className="size-4" />
           </Link>
         </div>
 
-        <div className="flex items-center gap-4 w-full">
+        {/* Category Cards */}
+        <div className="flex flex-col xl:flex-row items-stretch gap-4 w-full">
           <ImageCard
             href="/laptops"
             title="Laptops"
-            description="Performance meets value. Macbook, ThinkPad, and Dell Precision models."
+            description="Performance meets value. MacBook, ThinkPad, and Dell Precision models."
             buttonText="Shop Now"
             image={LaptopImage}
-            className="w-2/3"
+            className="xl:w-2/3 w-full"
           />
+
           <ImageCard
             href="/books"
             title="Books"
             description="Timeless Knowledge."
             buttonText="Browse"
             image={BooksImage}
-            className="w-1/3"
+            className="xl:w-1/3 w-full"
           />
         </div>
 
         <ImageCard
           href="/furniture"
           title="Furniture"
-          description="Designer peices for the conscious home. Sofas, desks, and storage."
+          description="Designer pieces for the conscious home. Sofas, desks, and storage."
           buttonText="Shop Collection"
           image={SofaImage}
-          className="w-full h-64 mb-18"
+          className="w-full h-72 sm:h-96 mb-12"
         />
       </div>
     </div>
