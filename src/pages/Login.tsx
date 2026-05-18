@@ -2,9 +2,38 @@ import { ShieldCheck } from "lucide-react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { loginUser } from "../lib/api"
 
 const Login = () => {
+    const navigate = useNavigate()
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [error, setError] = useState("")
+    const [loading, setLoading] = useState(false)
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError("")
+
+        try {
+            const data = await loginUser(email, password)
+
+            if (data.token) {
+                localStorage.setItem("token", data.token)
+                navigate("/")
+            } else {
+                setError(data.message || "Login failed. Check your credentials.")
+            }
+        } catch {
+            setError("Something went wrong. Try again.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="h-[90svh] flex items-center justify-center ">
             <div className="w-full h-[70svh] overflow-hidden rounded-2xl bg-white shadow-2xl grid md:grid-cols-2">
@@ -16,30 +45,23 @@ const Login = () => {
                 >
                     <div>
                         <h2 className="text-2xl font-medium mb-14">Second Sync</h2>
-
                         <h1 className="text-5xl font-semibold leading-tight max-w-md">
                             Precision meets fluid commerce.
                         </h1>
-
                         <p className="mt-6 text-neutral-300 text-sm max-w-sm leading-relaxed">
                             Join our exclusive marketplace where luxury items find their second rhythm.
                         </p>
                     </div>
-
-                    {/* Bottom Features */}
                     <div className="space-y-4 mt-16">
                         <div className="flex items-center gap-3 text-sm tracking-[0.2em] uppercase text-white/90">
                             <ShieldCheck className="size-5" />
                             Verified Members Only
                         </div>
-
                         <div className="flex items-center gap-3 text-sm tracking-[0.2em] uppercase text-white/90">
                             <ShieldCheck className="size-5" />
                             Secure Transactions
                         </div>
                     </div>
-
-                    {/* Decorative Glow */}
                     <div className="absolute top-32 left-24 w-44 h-44 bg-white/10 blur-3xl rounded-full"></div>
                 </div>
 
@@ -55,61 +77,56 @@ const Login = () => {
                             >
                                 LOGIN
                             </Link>
-
                             <Link to="/signup" className="text-center flex-1 pb-3 text-sm font-semibold text-gray-400">
                                 SIGN UP
                             </Link>
                         </div>
 
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+                                {error}
+                            </div>
+                        )}
+
                         {/* Login Form */}
-                        <form className="space-y-5">
+                        <form className="space-y-5" onSubmit={handleSubmit}>
 
                             {/* Email */}
                             <div>
-                                <Label className="mb-2">
-                                    Email Address
-                                </Label>
-
+                                <Label className="mb-2">Email Address</Label>
                                 <Input
                                     type="email"
                                     placeholder="name@company.com"
                                     className="w-full py-6"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
                                 />
                             </div>
 
                             {/* Password */}
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <Label>
-                                        Password
-                                    </Label>
-
-                                    <a
-                                        href="#"
-                                        className="text-sm hover:underline"
-                                        style={{ color: 'var(--primary-color)' }}
-                                    >
+                                    <Label>Password</Label>
+                                    <a href="#" className="text-sm hover:underline" style={{ color: 'var(--primary-color)' }}>
                                         Forgot Password?
                                     </a>
                                 </div>
-
                                 <Input
                                     type="password"
                                     placeholder="••••••••"
                                     className="w-full py-6"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
                                 />
                             </div>
 
                             {/* Remember */}
                             <div className="flex items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    className="rounded border-gray-300"
-                                />
-
-                                <span className="text-sm text-gray-600">
-                                    Remember Me
-                                </span>
+                                <input type="checkbox" className="rounded border-gray-300" />
+                                <span className="text-sm text-gray-600">Remember Me</span>
                             </div>
 
                             {/* Submit */}
@@ -117,21 +134,18 @@ const Login = () => {
                                 type="submit"
                                 className="w-full rounded-lg py-6"
                                 style={{ backgroundColor: 'var(--primary-color)' }}
+                                disabled={loading}
                             >
-                                Log In
+                                {loading ? "Logging in..." : "Log In"}
                             </Button>
                         </form>
 
                         {/* Footer */}
                         <p className="mt-10 text-center text-xs leading-relaxed text-gray-400">
-                            By continuing, you agree to Second Sync’s
-                            <a href="#" className="font-medium text-gray-600">
-                                Terms of Service
-                            </a>
+                            By continuing, you agree to Second Sync's
+                            <a href="#" className="font-medium text-gray-600"> Terms of Service </a>
                             and
-                            <a href="#" className="font-medium text-gray-600">
-                                Privacy Policy
-                            </a>.
+                            <a href="#" className="font-medium text-gray-600"> Privacy Policy</a>.
                         </p>
                     </div>
                 </div>
