@@ -1,0 +1,18 @@
+[
+  {
+    "keywords": ["upload", "sell", "post"],
+    "answer": "Go to Sell page and upload your product details."
+  },
+  {
+    "keywords": ["delete", "remove"],
+    "answer": "Go to My Listings and click delete."
+  },
+  {
+    "keywords": ["contact", "seller"],
+    "answer": "Open product page and click Contact Seller."
+  },
+  {
+    "keywords": ["payment", "pay"],
+    "answer": "We support cash and online payment methods."
+  }
+]
