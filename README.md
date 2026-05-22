@@ -44,6 +44,16 @@ npm run dev
 
 The API will run on `http://localhost:5000` by default.
 
+MongoDB is required before starting the API. For local development, either install
+and start MongoDB on `127.0.0.1:27017`, or run:
+
+```bash
+docker compose up -d mongo
+```
+
+If you use MongoDB Atlas or another remote database, set `MONGO_URI` in `.env`
+to that connection string before running `npm run dev`.
+
 ## Main Routes
 
 - `GET /api/v1/health`
