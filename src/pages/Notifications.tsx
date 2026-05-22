@@ -56,7 +56,7 @@ export default function Notifications() {
                                             </span>{" "}
                                             you're watching just dropped by{" "}
                                             <span className="text-(--primary-color) font-medium">
-                                                $150
+                                                Rs. 150
                                             </span>.
                                         </p>
 
@@ -151,7 +151,7 @@ export default function Notifications() {
                                         <p className="text-sm text-gray-500 mt-1 leading-relaxed">
                                             Your payment of{" "}
                                             <span className="font-medium">
-                                                $45.00
+                                                Rs. 45.00
                                             </span>{" "}
                                             for "Vintage Camera" has been
                                             processed successfully.

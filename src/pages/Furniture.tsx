@@ -85,7 +85,7 @@ const Furniture = () => {
             author: "Brushed Brass • Smart Dimmer",
             price: "Rs. 245.00",
             image:
-                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop",
+                "https://images.squarespace-cdn.com/content/v1/65cabb74f8143c0156bd41ce/6567cdd4-09c3-4386-b508-c95cfe6dad8f/Helix+Floor+Pink_20130729444_extended+background-web.jpg",
         },
         {
             id: 4,
@@ -93,7 +93,7 @@ const Furniture = () => {
             author: "Walnut Veneer • Silent Glide Drawer",
             price: "Rs. 180.00",
             image:
-                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop",
+                "https://tomschneider.co.uk/cdn/shop/files/Orbitbedside_table_Walnut_tom_schneider-04_7dee3cef-25e5-4063-b6d1-7858656d82b8.jpg?v=1723189476",
         },
         {
             id: 5,
@@ -101,7 +101,7 @@ const Furniture = () => {
             author: "Emerald Performance Velvet • Gold Legs",
             price: "Rs. 890.00",
             image:
-                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop",
+                "https://5.imimg.com/data5/SELLER/Default/2024/7/438972460/XQ/AD/SD/8956285/image-0901-500x500.jpg",
         },
         {
             id: 6,
@@ -109,7 +109,7 @@ const Furniture = () => {
             author: "Powder-Coated Steel • Modular",
             price: "Rs. 420.00",
             image:
-                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop",
+                "https://modernindustrialfurniture.com/cdn/shop/files/IMG_2440-SQ-1080_1080x.jpg?v=1771212803",
         },
     ];
 

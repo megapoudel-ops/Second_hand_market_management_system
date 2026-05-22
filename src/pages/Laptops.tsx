@@ -59,7 +59,7 @@ const Laptops = () => {
       price: "Rs. 1,999.00",
       rating: 4.9,
       image:
-        "https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
+        "https://sm.mashable.com/mashable_sea/review/m/m3-macbook/m3-macbook-pro-14-inch-review-why-you-should-buy-this-apple_r785.jpg",
     },
     {
       id: 2,
@@ -68,7 +68,7 @@ const Laptops = () => {
       price: "Rs. 2,449.00",
       rating: 4.8,
       image:
-        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1200&auto=format&fit=crop",
+        "https://sm.pcmag.com/t/pcmag_au/review/d/dell-xps-1/dell-xps-15-9530-2023_6h7m.1920.jpg",
     },
     {
       id: 3,
@@ -77,7 +77,7 @@ const Laptops = () => {
       price: "Rs. 1,699.00",
       rating: 4.7,
       image:
-        "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop",
+        "https://www.pcworld.com/wp-content/uploads/2025/04/G14_edited1.jpg?quality=50&strip=all",
     },
     {
       id: 4,
@@ -86,7 +86,7 @@ const Laptops = () => {
       price: "Rs. 1,850.00",
       rating: 4.9,
       image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop",
+        "https://laptopmedia.com/wp-content/uploads/2024/09/IMG_6A1E31148A6D-1.jpeg",
     },
     {
       id: 5,
@@ -95,7 +95,7 @@ const Laptops = () => {
       price: "Rs. 3,299.00",
       rating: 4.6,
       image:
-        "https://images.unsplash.com/photo-1504707748692-419802cf939d?q=80&w=1200&auto=format&fit=crop",
+        "https://static0.xdaimages.com/wordpress/wp-content/uploads/2022/11/razer-blade-16-1.jpg",
     },
     {
       id: 6,
@@ -104,7 +104,7 @@ const Laptops = () => {
       price: "Rs. 1,299.00",
       rating: 4.8,
       image:
-        "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop",
+        "https://cdn.mos.cms.futurecdn.net/yg6EsCnDYstVq7RueGn68c.jpg",
     },
   ];
 
@@ -192,6 +192,7 @@ const Laptops = () => {
               <FilterCheckbox label="Intel Core i7" checked />
               <FilterCheckbox label="Apple M3 Pro" />
             </FilterSection>
+            
           </div>
         </aside>
 
