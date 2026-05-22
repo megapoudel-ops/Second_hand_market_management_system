@@ -15,7 +15,8 @@ const {
   markUnread,
   markAllRead,
   deleteNotification,
-  getStats
+  getStats,
+  dispatchDue
 } = require('../controllers/notification.controller');
 
 router.use(authenticate);
@@ -24,6 +25,7 @@ router.get('/', validate(notificationQuerySchema, 'query'), getNotifications);
 router.get('/stats', getStats);
 router.post('/', authorize('admin', 'seller'), validate(notificationSchema), createNotification);
 router.post('/bulk', authorize('admin'), validate(bulkNotificationSchema), createBulkNotifications);
+router.post('/dispatch-due', authorize('admin'), dispatchDue);
 router.patch('/read-all', markAllRead);
 router.get('/:id', getNotificationById);
 router.patch('/:id/read', markRead);

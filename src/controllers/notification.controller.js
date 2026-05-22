@@ -2,7 +2,7 @@ const Notification = require('../models/notification.model');
 const ApiError = require('../utils/apiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { success } = require('../utils/apiResponse');
-const { createAndDispatch } = require('../services/notification.service');
+const { createAndDispatch, dispatchDueNotifications } = require('../services/notification.service');
 
 const createNotification = asyncHandler(async (req, res) => {
   const notification = await createAndDispatch({
@@ -138,6 +138,14 @@ const getStats = asyncHandler(async (req, res) => {
   });
 });
 
+const dispatchDue = asyncHandler(async (_req, res) => {
+  const notifications = await dispatchDueNotifications();
+
+  success(res, 200, 'Due notifications dispatched successfully', notifications, {
+    count: notifications.length
+  });
+});
+
 module.exports = {
   createNotification,
   createBulkNotifications,
@@ -147,5 +155,6 @@ module.exports = {
   markUnread,
   markAllRead,
   deleteNotification,
-  getStats
+  getStats,
+  dispatchDue
 };

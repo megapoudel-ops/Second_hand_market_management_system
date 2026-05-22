@@ -10,9 +10,11 @@ REST API for notification management in a secondhand market management system.
 - In-app notifications.
 - Email, SMS, and push provider abstraction.
 - Notification templates.
+- Template-based notification creation with variables.
 - User notification preferences.
 - Mark read, mark unread, mark all read.
 - Bulk notification creation.
+- Scheduled notification dispatch.
 - Basic notification stats.
 - Centralized validation, error handling, and response formatting.
 
@@ -50,6 +52,7 @@ The API will run on `http://localhost:5000` by default.
 - `GET /api/v1/notifications`
 - `POST /api/v1/notifications`
 - `POST /api/v1/notifications/bulk`
+- `POST /api/v1/notifications/dispatch-due`
 - `GET /api/v1/notifications/stats`
 - `PATCH /api/v1/notifications/:id/read`
 - `PATCH /api/v1/notifications/:id/unread`
@@ -70,6 +73,22 @@ The API will run on `http://localhost:5000` by default.
   "type": "message",
   "channels": ["in_app", "email"],
   "priority": "normal",
+  "metadata": {
+    "listingId": "LISTING_ID"
+  }
+}
+```
+
+## Example Template Notification Payload
+
+```json
+{
+  "recipient": "USER_ID",
+  "templateKey": "listing_message",
+  "variables": {
+    "buyerName": "Asha",
+    "listingTitle": "Used laptop"
+  },
   "metadata": {
     "listingId": "LISTING_ID"
   }

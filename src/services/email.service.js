@@ -2,7 +2,10 @@ const nodemailer = require('nodemailer');
 const config = require('../config/env');
 
 function hasSmtpConfig() {
-  return Boolean(config.smtp.host && config.smtp.user && config.smtp.pass);
+  return (
+    config.emailProvider === 'smtp' &&
+    Boolean(config.smtp.host && config.smtp.user && config.smtp.pass)
+  );
 }
 
 async function sendEmail({ to, subject, text }) {

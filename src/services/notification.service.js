@@ -1,10 +1,56 @@
 const Notification = require('../models/notification.model');
 const Preference = require('../models/preference.model');
+const Template = require('../models/template.model');
 const User = require('../models/user.model');
 const ApiError = require('../utils/apiError');
 const { sendEmail } = require('./email.service');
 const { sendSms } = require('./sms.service');
 const { sendPush } = require('./push.service');
+const { renderTemplate } = require('./template.service');
+
+function mapToObject(value) {
+  if (!value) {
+    return {};
+  }
+
+  if (value instanceof Map) {
+    return Object.fromEntries(value);
+  }
+
+  if (typeof value.toObject === 'function') {
+    return value.toObject();
+  }
+
+  return value;
+}
+
+async function buildPayload(payload) {
+  if (!payload.templateKey) {
+    return payload;
+  }
+
+  const template = await Template.findOne({ key: payload.templateKey, isActive: true });
+
+  if (!template) {
+    throw new ApiError(404, 'Notification template not found');
+  }
+
+  const rendered = renderTemplate(template, payload.variables);
+  const defaultChannels = Array.isArray(template.defaultChannels) ? template.defaultChannels : [];
+
+  return {
+    ...payload,
+    title: payload.title || rendered.title,
+    message: payload.message || rendered.message,
+    type: payload.type || template.type,
+    channels:
+      payload.channels && payload.channels.length
+        ? payload.channels
+        : defaultChannels.length
+          ? defaultChannels
+          : ['in_app']
+  };
+}
 
 async function getAllowedChannels(userId, type, requestedChannels) {
   const preference = await Preference.findOne({ user: userId });
@@ -56,12 +102,12 @@ async function dispatchNotification(notification) {
       });
     }
 
-    if (channels.includes('push') && recipient.pushTokens.length) {
+    if (channels.includes('push') && Array.isArray(recipient.pushTokens) && recipient.pushTokens.length) {
       await sendPush({
         tokens: recipient.pushTokens,
         title: notification.title,
         message: notification.message,
-        data: Object.fromEntries(notification.metadata || [])
+        data: mapToObject(notification.metadata)
       });
     }
 
@@ -79,7 +125,14 @@ async function dispatchNotification(notification) {
 }
 
 async function createAndDispatch(payload) {
-  const notification = await Notification.create(payload);
+  const preparedPayload = await buildPayload(payload);
+  const recipient = await User.findById(preparedPayload.recipient);
+
+  if (!recipient) {
+    throw new ApiError(404, 'Notification recipient not found');
+  }
+
+  const notification = await Notification.create(preparedPayload);
 
   if (notification.scheduledFor && notification.scheduledFor > new Date()) {
     return notification;
@@ -88,7 +141,23 @@ async function createAndDispatch(payload) {
   return dispatchNotification(notification);
 }
 
+async function dispatchDueNotifications(now = new Date()) {
+  const dueNotifications = await Notification.find({
+    status: 'pending',
+    scheduledFor: { $lte: now }
+  });
+
+  const results = [];
+
+  for (const notification of dueNotifications) {
+    results.push(await dispatchNotification(notification));
+  }
+
+  return results;
+}
+
 module.exports = {
   createAndDispatch,
+  dispatchDueNotifications,
   dispatchNotification
 };

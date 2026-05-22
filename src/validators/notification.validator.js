@@ -5,8 +5,18 @@ const channels = Joi.array().items(Joi.string().valid('in_app', 'email', 'sms', 
 
 const notificationSchema = Joi.object({
   recipient: objectId.required(),
-  title: Joi.string().max(140).required(),
-  message: Joi.string().max(2000).required(),
+  templateKey: Joi.string().trim().lowercase().max(120),
+  variables: Joi.object().default({}),
+  title: Joi.when('templateKey', {
+    is: Joi.exist(),
+    then: Joi.string().max(140),
+    otherwise: Joi.string().max(140).required()
+  }),
+  message: Joi.when('templateKey', {
+    is: Joi.exist(),
+    then: Joi.string().max(2000),
+    otherwise: Joi.string().max(2000).required()
+  }),
   type: Joi.string()
     .valid('system', 'listing', 'order', 'payment', 'message', 'review', 'promotion')
     .default('system'),
@@ -18,8 +28,18 @@ const notificationSchema = Joi.object({
 
 const bulkNotificationSchema = Joi.object({
   recipients: Joi.array().items(objectId).min(1).required(),
-  title: Joi.string().max(140).required(),
-  message: Joi.string().max(2000).required(),
+  templateKey: Joi.string().trim().lowercase().max(120),
+  variables: Joi.object().default({}),
+  title: Joi.when('templateKey', {
+    is: Joi.exist(),
+    then: Joi.string().max(140),
+    otherwise: Joi.string().max(140).required()
+  }),
+  message: Joi.when('templateKey', {
+    is: Joi.exist(),
+    then: Joi.string().max(2000),
+    otherwise: Joi.string().max(2000).required()
+  }),
   type: Joi.string()
     .valid('system', 'listing', 'order', 'payment', 'message', 'review', 'promotion')
     .default('system'),

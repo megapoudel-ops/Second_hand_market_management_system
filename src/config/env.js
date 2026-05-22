@@ -9,6 +9,7 @@ const config = {
   corsOrigin: process.env.CORS_ORIGIN || '*',
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 900000),
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 100),
+  emailProvider: process.env.EMAIL_PROVIDER || 'console',
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
