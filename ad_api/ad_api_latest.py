@@ -20,9 +20,8 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
 
 
-# ─────────────────────────────────────────────
 # CONFIG
-# ─────────────────────────────────────────────
+
 
 MONGO_URI = "mongodb+srv://rajkarnikar:redhonda_2265@cluster0.oe5udmu.mongodb.net/"
 DB_NAME = "ecommerce"
@@ -65,9 +64,7 @@ app.add_middleware(
 )
 
 
-# ─────────────────────────────────────────────
 # ENUMS
-# ─────────────────────────────────────────────
 
 class Category(str, Enum):
     laptop = "laptop"
@@ -75,9 +72,7 @@ class Category(str, Enum):
     books = "books"
 
 
-# ─────────────────────────────────────────────
 # MODELS
-# ─────────────────────────────────────────────
 
 class UserRegister(BaseModel):
     name: str
@@ -98,9 +93,7 @@ class AdCreate(BaseModel):
     tags: List[str] = Field(..., min_length=3)
 
 
-# ─────────────────────────────────────────────
 # JWT HELPERS
-# ─────────────────────────────────────────────
 
 def hash_password(password: str):
     return pwd_context.hash(password)
@@ -149,9 +142,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         raise HTTPException(401, "Invalid token")
 
 
-# ─────────────────────────────────────────────
 # AUTH ROUTES
-# ─────────────────────────────────────────────
 
 @app.post("/register")
 async def register(user: UserRegister):
@@ -204,9 +195,7 @@ async def login(user: UserLogin):
     }
 
 
-# ─────────────────────────────────────────────
 # FRAUD DETECTION
-# ─────────────────────────────────────────────
 
 SCAM_WORDS = [
     "pay first",
@@ -230,9 +219,7 @@ def detect_fraud(description: str, price: float):
     return False
 
 
-# ─────────────────────────────────────────────
 # CREATE AD
-# ─────────────────────────────────────────────
 
 @app.post("/ads")
 async def create_ad(
@@ -270,10 +257,34 @@ async def create_ad(
         "fraud_flag": fraud_detected
     }
 
+# FETCH ALL ADS 
 
-# ─────────────────────────────────────────────
+@app.get("/ads")
+async def get_all_ads(category: Optional[Category] = None):
+    """
+    Fetches all ads from the database, newest first.
+    Filters out ads that have been flagged as fraudulent.
+    Can optionally filter by category (e.g., /ads?category=laptop).
+    """
+    query = {"fraud_flag": False}
+    if category:
+        query["category"] = category
+
+    cursor = db.ads.find(query).sort("created_at", -1)
+    
+    ads = []
+    async for doc in cursor:
+        doc["id"] = str(doc["_id"])
+        del doc["_id"]  # Remove the raw ObjectId mapping so it can convert clean to JSON
+        ads.append(doc)
+
+    return {
+        "success": True,
+        "count": len(ads),
+        "ads": ads
+    }
+
 # FAVORITES
-# ─────────────────────────────────────────────
 
 @app.post("/ads/{ad_id}/save")
 async def save_ad(
@@ -327,9 +338,7 @@ async def get_favorites(
     }
 
 
-# ─────────────────────────────────────────────
 # WEBSOCKET NOTIFICATIONS
-# ─────────────────────────────────────────────
 
 active_connections = []
 
@@ -350,9 +359,7 @@ async def websocket_endpoint(websocket: WebSocket):
         active_connections.remove(websocket)
 
 
-# ─────────────────────────────────────────────
 # PUSH NOTIFICATION PLACEHOLDER
-# ─────────────────────────────────────────────
 
 async def send_push_notification(
     user_id: str,
@@ -366,9 +373,7 @@ async def send_push_notification(
     print(f"Push notification → {title}: {body}")
 
 
-# ─────────────────────────────────────────────
 # HEALTH
-# ─────────────────────────────────────────────
 
 @app.get("/health")
 async def health():
@@ -379,9 +384,7 @@ async def health():
     }
 
 
-# ─────────────────────────────────────────────
 # RUN
-# ─────────────────────────────────────────────
 
 if __name__ == "__main__":
     import multiprocessing
