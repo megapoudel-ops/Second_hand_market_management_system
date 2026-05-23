@@ -1,8 +1,3 @@
-"""
-Payment API System - Flask + MongoDB Backend
-Updated to support Wallet API integration.
-Wallet API runs on port 8081 (wallet_api.py)
-"""
 from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 from dotenv import load_dotenv
