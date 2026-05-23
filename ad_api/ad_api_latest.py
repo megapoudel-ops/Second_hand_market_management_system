@@ -384,9 +384,10 @@ async def health():
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
-
+    import multiprocessing
+    multiprocessing.freeze_support()
     uvicorn.run(
-        "ad_api_updated:app",
+        "ad_api_latest:app",
         host="0.0.0.0",
         port=8000,
         reload=True
