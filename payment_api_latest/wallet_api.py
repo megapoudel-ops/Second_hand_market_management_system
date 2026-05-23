@@ -25,9 +25,7 @@ import certifi
 
 load_dotenv()
 
-# ─────────────────────────────────────────────
 # CONFIG
-# ─────────────────────────────────────────────
 
 CURRENCY         = "NPR"
 COMMISSION_RATE  = 0.03          # 3%
@@ -40,9 +38,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/wallet/*": {"origins": "*"}})
 
 
-# ─────────────────────────────────────────────
 # DB
-# ─────────────────────────────────────────────
 
 def get_db():
     client = MongoClient(
@@ -73,9 +69,7 @@ def init_db():
     print("✅ Wallet DB Initialised")
 
 
-# ─────────────────────────────────────────────
 # HELPERS
-# ─────────────────────────────────────────────
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
@@ -121,9 +115,7 @@ def paginate(collection, query_filter, sort_field, page=1, per_page=20):
     }
 
 
-# ─────────────────────────────────────────────
 # AUTH
-# ─────────────────────────────────────────────
 
 def require_api_key(f):
     @wraps(f)
@@ -142,9 +134,7 @@ def require_api_key(f):
     return decorated
 
 
-# ─────────────────────────────────────────────
 # WALLET INFO
-# ─────────────────────────────────────────────
 
 @app.get("/wallet")
 def wallet_info():
@@ -173,9 +163,7 @@ def wallet_info():
     })
 
 
-# ─────────────────────────────────────────────
 # CUSTOMER / WALLET REGISTRATION
-# ─────────────────────────────────────────────
 
 @app.post("/wallet/customers")
 @require_api_key
@@ -258,9 +246,7 @@ def get_customer(wallet_id):
     return jsonify(wallet)
 
 
-# ─────────────────────────────────────────────
 # DEPOSIT
-# ─────────────────────────────────────────────
 
 @app.post("/wallet/deposit")
 @require_api_key
@@ -323,9 +309,7 @@ def deposit():
     }), 201
 
 
-# ─────────────────────────────────────────────
 # WITHDRAW
-# ─────────────────────────────────────────────
 
 @app.post("/wallet/withdraw")
 @require_api_key
@@ -393,9 +377,7 @@ def withdraw():
     }), 201
 
 
-# ─────────────────────────────────────────────
 # TRANSFER (Peer-to-Peer Send)
-# ─────────────────────────────────────────────
 
 @app.post("/wallet/transfer")
 @require_api_key
@@ -504,9 +486,7 @@ def transfer():
     }), 201
 
 
-# ─────────────────────────────────────────────
 # TRANSACTIONS
-# ─────────────────────────────────────────────
 
 @app.get("/wallet/transactions")
 @require_api_key
@@ -543,9 +523,7 @@ def get_transaction(txn_id):
     return jsonify(clean(txn))
 
 
-# ─────────────────────────────────────────────
 # ANALYTICS
-# ─────────────────────────────────────────────
 
 @app.get("/wallet/analytics")
 @require_api_key
@@ -615,37 +593,95 @@ def analytics():
     })
 
 
-# ─────────────────────────────────────────────
 # PAYMENT API BRIDGE ENDPOINTS
-# ─────────────────────────────────────────────
 
-@app.post("/wallet/bridge/deposit-from-payment")
+@app.post("/wallet/bridge/pay")
 @require_api_key
-def bridge_deposit_from_payment():
+def bridge_pay():
     """
-    Called by app.py (Payment API) after a successful payment to auto-deposit
-    funds into the linked wallet.
-    Body: { wallet_id, amount, payment_api_payment_id }
+    Called by app.py to automatically debit funds from a customer's wallet 
+    during a merchant checkout purchase.
     """
-    data      = request.get_json(force=True)
-    wallet_id = (data.get("wallet_id") or "").upper()
-    amount    = data.get("amount")
-    pay_id    = data.get("payment_api_payment_id")
+    data       = request.get_json(force=True)
+    wallet_id  = (data.get("wallet_id") or "").upper()
+    amount     = data.get("amount")
+    payment_id = data.get("payment_ref")
 
-    if not wallet_id or not amount or not pay_id:
-        return jsonify(
-            error="wallet_id, amount and payment_api_payment_id are required",
-            code="validation_error"
-        ), 400
+    if not wallet_id or amount is None or not payment_id:
+        return jsonify(error="wallet_id, amount, and payment_ref are required", code="validation_error"), 400
 
     db = get_db()
     wallet = db.wallets.find_one({"wallet_id": wallet_id, "is_active": True})
     if not wallet:
-        return jsonify(error="Wallet not found", code="not_found"), 404
+        return jsonify(error="Wallet not found or inactive", code="not_found"), 404
+
+    amount = round(float(amount), 2)
+    if wallet["balance"] < amount:
+        return jsonify(error=f"Insufficient wallet balance. Available: NPR {wallet['balance']}", code="insufficient_balance"), 400
+
+    now         = now_iso()
+    txn_id      = "TXN-CHCK-" + uuid.uuid4().hex[:10].upper()
+    new_balance = round(wallet["balance"] - amount, 2)
+
+    # Atomically update wallet state
+    db.wallets.update_one(
+        {"wallet_id": wallet_id},
+        {"$set": {
+            "balance":    new_balance,
+            "total_sent": round(wallet.get("total_sent", 0) + amount, 2),
+            "updated_at": now
+        }}
+    )
+
+    # Log merchant checkout event to transaction history
+    db.transactions.insert_one({
+        "txn_id":                 txn_id,
+        "type":                   "merchant_payment",
+        "sender_wallet_id":       wallet_id,
+        "receiver_wallet_id":     None,
+        "amount":                 amount,
+        "commission":             0.0, # No peer transfer commission on direct purchases
+        "net_amount":             amount,
+        "currency":               CURRENCY,
+        "status":                 "completed",
+        "note":                   data.get("description") or f"Merchant Checkout Payment: {payment_id}",
+        "payment_api_payment_id": payment_id,
+        "created_at":             now
+    })
+
+    return jsonify({
+        "success":     True,
+        "txn_id":      txn_id,
+        "wallet_id":   wallet_id,
+        "debited":     amount,
+        "new_balance": new_balance,
+        "currency":    CURRENCY
+    }), 200
+
+
+@app.post("/wallet/bridge/credit")
+@require_api_key
+def bridge_credit():
+    """
+    Called by app.py to credit back funds to a customer's wallet 
+    following a merchant refund request.
+    """
+    data       = request.get_json(force=True)
+    wallet_id  = (data.get("wallet_id") or "").upper()
+    amount     = data.get("amount")
+    payment_id = data.get("payment_ref")
+
+    if not wallet_id or amount is None or not payment_id:
+        return jsonify(error="wallet_id, amount, and payment_ref are required", code="validation_error"), 400
+
+    db = get_db()
+    wallet = db.wallets.find_one({"wallet_id": wallet_id, "is_active": True})
+    if not wallet:
+        return jsonify(error="Wallet not found or inactive", code="not_found"), 404
 
     amount      = round(float(amount), 2)
     now         = now_iso()
-    txn_id      = "TXN-DEP-" + uuid.uuid4().hex[:10].upper()
+    txn_id      = "TXN-RFND-" + uuid.uuid4().hex[:10].upper()
     new_balance = round(wallet["balance"] + amount, 2)
 
     db.wallets.update_one(
@@ -656,9 +692,10 @@ def bridge_deposit_from_payment():
             "updated_at":      now
         }}
     )
+
     db.transactions.insert_one({
         "txn_id":                 txn_id,
-        "type":                   "deposit",
+        "type":                   "refund",
         "sender_wallet_id":       None,
         "receiver_wallet_id":     wallet_id,
         "amount":                 amount,
@@ -666,8 +703,8 @@ def bridge_deposit_from_payment():
         "net_amount":             amount,
         "currency":               CURRENCY,
         "status":                 "completed",
-        "note":                   f"Auto-deposit from Payment API: {pay_id}",
-        "payment_api_payment_id": pay_id,
+        "note":                   f"Refund reversal from Payment API Reference: {payment_id}",
+        "payment_api_payment_id": payment_id,
         "created_at":             now
     })
 
@@ -675,12 +712,10 @@ def bridge_deposit_from_payment():
         "success":     True,
         "txn_id":      txn_id,
         "wallet_id":   wallet_id,
-        "deposited":   amount,
+        "credited":    amount,
         "new_balance": new_balance,
-        "currency":    CURRENCY,
-        "source":      "payment_api",
-        "payment_id":  pay_id
-    }), 201
+        "currency":    CURRENCY
+    }), 200
 
 
 @app.get("/wallet/bridge/balance/<wallet_id>")
@@ -701,9 +736,7 @@ def bridge_get_balance(wallet_id):
     })
 
 
-# ─────────────────────────────────────────────
 # ERROR HANDLERS
-# ─────────────────────────────────────────────
 
 @app.errorhandler(404)
 def not_found(e):
@@ -718,9 +751,7 @@ def internal_error(e):
     return jsonify(error="Internal server error", code="internal_error"), 500
 
 
-# ─────────────────────────────────────────────
 # MAIN
-# ─────────────────────────────────────────────
 
 if __name__ == "__main__":
     with app.app_context():
