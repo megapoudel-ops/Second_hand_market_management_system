@@ -1,29 +1,8 @@
-"""
-user_api.py
-────────────────────────────────────────────────────────────────────────────
-User / Unique-ID API  ·  companion to ad_api_latest.py + media_upload_api.py
-────────────────────────────────────────────────────────────────────────────
-
-Endpoints
-─────────
-GET  /api/user/unique-id            Return the authenticated user's unique ID
-GET  /api/user/search/:uniqueId     Find any user by their unique ID (public)
-GET  /api/user/:userId              Get full public profile by MongoDB _id
-
-Internal
-─────────
-• On first use, a `unique_id` is auto-generated and saved to the user doc
-  (format:  USR-<adjective>-<noun>-<4 digits>  e.g. USR-SWIFT-EAGLE-4821)
-• unique_id is indexed for O(1) lookups
-• Passwords are never returned in any response
-
-────────────────────────────────────────────────────────────────────────────
-"""
-
+import os
 import random
 import string
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 import uvicorn
@@ -37,7 +16,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 # CONFIG  (keep in sync with ad_api_latest.py)
 # ─────────────────────────────────────────────
 
-MONGO_URI  = "mongodb+srv://rajkarnikar:redhonda_2265@cluster0.oe5udmu.mongodb.net/"
+# Best practice: Fallback to hardcoded string only if environment variable isn't set
+MONGO_URI  = os.getenv("MONGO_URI", "mongodb+srv://rajkarnikar:redhonda_2265@cluster0.oe5udmu.mongodb.net/")
 DB_NAME    = "ecommerce"
 SECRET_KEY = "SUPER_SECRET_KEY"
 ALGORITHM  = "HS256"
@@ -47,8 +27,6 @@ db = None
 # ─────────────────────────────────────────────
 # UNIQUE ID GENERATOR
 # ─────────────────────────────────────────────
-# Format:  USR-<ADJECTIVE>-<NOUN>-<4 digits>
-# Example: USR-SWIFT-EAGLE-4821
 
 _ADJECTIVES = [
     "SWIFT", "BOLD", "CALM", "DARK", "EPIC",
@@ -75,14 +53,9 @@ def _generate_unique_id() -> str:
 
 
 async def _ensure_unique_id(user: dict) -> str:
-    """
-    If the user already has a unique_id, return it.
-    Otherwise generate one (with collision retry), persist it, and return it.
-    """
     if user.get("unique_id"):
         return user["unique_id"]
 
-    # Collision-safe generation (max 10 attempts)
     for _ in range(10):
         candidate = _generate_unique_id()
         existing  = await db.users.find_one({"unique_id": candidate})
@@ -92,7 +65,7 @@ async def _ensure_unique_id(user: dict) -> str:
                 {
                     "$set": {
                         "unique_id"  : candidate,
-                        "uid_created": datetime.utcnow(),
+                        "uid_created": datetime.now(timezone.utc),
                     }
                 },
             )
@@ -103,11 +76,14 @@ async def _ensure_unique_id(user: dict) -> str:
 
 def _public_profile(user: dict) -> dict:
     """Strip sensitive fields; return a clean public-safe dict."""
+    # Fallback to MongoDB _id generation time if uid_created doesn't exist yet
+    joined_at = user.get("uid_created") or user["_id"].generation_time
+    
     return {
         "user_id"   : str(user["_id"]),
         "name"      : user.get("name", ""),
         "unique_id" : user.get("unique_id"),
-        "joined_at" : user.get("uid_created"),
+        "joined_at" : joined_at,
         "ad_count"  : user.get("ad_count", 0),
         "avatar_url": user.get("avatar_url"),
         "bio"       : user.get("bio"),
@@ -121,11 +97,9 @@ def _public_profile(user: dict) -> dict:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global db
-
     client = AsyncIOMotorClient(MONGO_URI)
     db     = client[DB_NAME]
 
-    # Sparse index: only indexes docs that have unique_id set
     await db.users.create_index(
         [("unique_id", 1)],
         unique=True,
@@ -159,7 +133,7 @@ app.add_middleware(
 
 
 # ─────────────────────────────────────────────
-# AUTH HELPER  (mirrors ad_api_latest.py)
+# AUTH HELPER
 # ─────────────────────────────────────────────
 
 async def get_current_user(authorization: Optional[str] = Header(None)):
@@ -169,11 +143,13 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         token   = authorization.replace("Bearer ", "")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
+        if not user_id:
+            raise HTTPException(401, "Invalid token payload")
         user    = await db.users.find_one({"_id": ObjectId(user_id)})
         if not user:
             raise HTTPException(401, "Invalid token")
         return user
-    except JWTError:
+    except (JWTError, Exception):
         raise HTTPException(401, "Invalid token")
 
 
@@ -181,17 +157,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
 # ROUTES
 # ─────────────────────────────────────────────
 
-# ── GET /api/user/unique-id  ──────────────────────────────────────────────────
-
-@app.get(
-    "/api/user/unique-id",
-    summary     = "Get your unique ID",
-    description = (
-        "Returns the authenticated user's unique ID (e.g. USR-SWIFT-EAGLE-4821). "
-        "If no unique ID has been assigned yet, one is generated and saved automatically."
-    ),
-    tags=["User"],
-)
+@app.get("/api/user/unique-id", tags=["User"])
 async def get_my_unique_id(current_user=Depends(get_current_user)):
     uid = await _ensure_unique_id(current_user)
     return {
@@ -201,17 +167,7 @@ async def get_my_unique_id(current_user=Depends(get_current_user)):
     }
 
 
-# ── GET /api/user/search/{uniqueId}  (PUBLIC) ────────────────────────────────
-
-@app.get(
-    "/api/user/search/{uniqueId}",
-    summary     = "Search for a user by unique ID",
-    description = (
-        "Public endpoint. Pass the unique ID string (e.g. USR-SWIFT-EAGLE-4821) "
-        "to look up a user's public profile. No authentication required."
-    ),
-    tags=["User"],
-)
+@app.get("/api/user/search/{uniqueId}", tags=["User"])
 async def search_by_unique_id(uniqueId: str):
     user = await db.users.find_one({"unique_id": uniqueId.upper()})
     if not user:
@@ -222,17 +178,7 @@ async def search_by_unique_id(uniqueId: str):
     }
 
 
-# ── GET /api/user/{userId}  (PUBLIC) ─────────────────────────────────────────
-
-@app.get(
-    "/api/user/{userId}",
-    summary     = "Get public profile by user ID",
-    description = (
-        "Public endpoint. Returns name, unique ID, join date, and optional "
-        "bio / avatar for any registered user. Passwords are never exposed."
-    ),
-    tags=["User"],
-)
+@app.get("/api/user/{userId}", tags=["User"])
 async def get_user_profile(userId: str):
     try:
         oid = ObjectId(userId)
@@ -249,25 +195,14 @@ async def get_user_profile(userId: str):
     }
 
 
-# ── GET /health ───────────────────────────────────────────────────────────────
-
 @app.get("/health", tags=["Health"])
 async def health():
     return {
         "status" : "OK",
         "service": "User / Unique-ID API",
-        "time"   : datetime.utcnow(),
+        "time"   : datetime.now(timezone.utc),
     }
 
 
-# ─────────────────────────────────────────────
-# RUN
-# ─────────────────────────────────────────────
-
 if __name__ == "__main__":
-    uvicorn.run(
-        "user_api:app",
-        host   = "0.0.0.0",
-        port   = 8002,
-        reload = True,
-    )
+    uvicorn.run("user_api:app", host="0.0.0.0", port=8002, reload=True)
