@@ -83,8 +83,11 @@ def paginate_collection(collection, query_filter, sort_field, page=1, per_page=2
 # ─── Wallet Bridge ────────────────────────────────────────────────────────────
 def wallet_debit(wallet_id, amount, payment_ref, description=""):
     try:
-        r = http_requests.post(f"{WALLET_API_URL}/api/payment-bridge/pay",
-            json={"wallet_id": wallet_id, "amount": amount, "payment_ref": payment_ref, "description": description},
+        # Fixed: Added /wallet prefix and updated path to match wallet_api.py
+        # Fixed: Converted amount from paisa (smallest unit) to nominal NPR (divided by 100)
+        nominal_amount = amount / 100.0
+        r = http_requests.post(f"{WALLET_API_URL}/wallet/bridge/pay",
+            json={"wallet_id": wallet_id, "amount": nominal_amount, "payment_ref": payment_ref, "description": description},
             headers={"X-API-Key": WALLET_API_KEY}, timeout=5)
         return r.status_code in (200, 201), r.json()
     except Exception as e:
@@ -92,13 +95,15 @@ def wallet_debit(wallet_id, amount, payment_ref, description=""):
 
 def wallet_credit(wallet_id, amount, payment_ref, reason="refund"):
     try:
-        r = http_requests.post(f"{WALLET_API_URL}/api/payment-bridge/credit",
-            json={"wallet_id": wallet_id, "amount": amount, "payment_ref": payment_ref, "reason": reason},
+        # Fixed: Added /wallet prefix and updated path to match wallet_api.py
+        # Fixed: Converted amount from paisa to nominal NPR
+        nominal_amount = amount / 100.0
+        r = http_requests.post(f"{WALLET_API_URL}/wallet/bridge/credit",
+            json={"wallet_id": wallet_id, "amount": nominal_amount, "payment_ref": payment_ref, "reason": reason},
             headers={"X-API-Key": WALLET_API_KEY}, timeout=5)
         return r.status_code in (200, 201), r.json()
     except Exception as e:
         return False, {"error": str(e)}
-
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 @app.route("/")
 @app.route("/dashboard")
