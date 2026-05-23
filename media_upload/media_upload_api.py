@@ -1,34 +1,3 @@
-"""
-media_upload_api.py
-────────────────────────────────────────────────────────────────────────────
-Media Upload API  ·  companion to ad_api_latest.py
-────────────────────────────────────────────────────────────────────────────
-
-Endpoints
-─────────
-POST /api/media/upload-image          Upload a single image for an ad
-POST /api/media/upload-file           Upload any single file for an ad
-POST /api/media/upload-folder         Upload multiple files as a "folder batch"
-GET  /api/media/ad/{ad_id}            List all media attached to an ad (public)
-GET  /api/media/file/{file_id}        Stream / download a file (public)
-DELETE /api/media/file/{file_id}      Delete a file (owner only)
-
-Storage
-───────
-Files are stored as GridFS chunks in the same MongoDB cluster used by
-ad_api_latest.py.  No third-party bucket needed.
-
-Relationship to ad_api_latest.py
-─────────────────────────────────
-  1. Call  POST /api/media/upload-image  (or upload-file / upload-folder)
-     with the Bearer token from /login.  Receive { file_id, url }.
-  2. Pass those URLs in the `media` list when you call POST /ads.
-  3. GET /api/media/ad/{ad_id} returns every file attached to an ad for
-     the public listing page.
-
-────────────────────────────────────────────────────────────────────────────
-"""
-
 import io
 import mimetypes
 import os
