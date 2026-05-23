@@ -26,8 +26,9 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # ─── MongoDB ──────────────────────────────────────────────────────────────────
 def get_db():
+    db_name = os.getenv("DB_NAME", "ecommerce")
     client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017"), tlsCAFile=certifi.where())
-    return client["payments_db"]
+    return client[db_name]
 
 def init_db():
     db = get_db()
