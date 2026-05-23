@@ -29,11 +29,12 @@ CORS(app, resources={r"/wallet/*": {"origins": "*"}})
 # DB
 
 def get_db():
+    db_name = os.getenv("DB_NAME", "ecommerce")
     client = MongoClient(
         os.getenv("MONGO_URI", "mongodb://localhost:27017"),
         tlsCAFile=certifi.where()
     )
-    return client["wallet_db"]
+    return client[db_name]
 
 
 def init_db():
@@ -265,7 +266,6 @@ def deposit_funds():
             "updated_at": now_iso()
         }}
     )
-    # ... rest of your deposit logic (inserting transaction history)
 
     db.transactions.insert_one({
         "txn_id":                 txn_id,
@@ -326,7 +326,6 @@ def withdraw_funds():
             "updated_at": now_iso()
         }}
     )
-    # ... rest of your withdrawal logic
 
     db.transactions.insert_one({
         "txn_id":                 txn_id,
@@ -406,7 +405,6 @@ def transfer_funds():
             "updated_at": now_iso()
         }}
     )
-    # ... rest of your transaction logging logic
 
     db.wallets.update_one(
         {"wallet_id": recv_id},
