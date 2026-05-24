@@ -3,15 +3,26 @@ import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { loginUser } from "../lib/api"
 
 const Login = () => {
     const navigate = useNavigate()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [rememberMe, setRememberMe] = useState(false)
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        const savedEmail = localStorage.getItem("rememberedEmail")
+        const savedPassword = localStorage.getItem("rememberedPassword")
+        if (savedEmail && savedPassword) {
+            setEmail(savedEmail)
+            setPassword(savedPassword)
+            setRememberMe(true)
+        }
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -23,6 +34,15 @@ const Login = () => {
 
             if (data.token) {
                 localStorage.setItem("token", data.token)
+
+                if (rememberMe) {
+                    localStorage.setItem("rememberedEmail", email)
+                    localStorage.setItem("rememberedPassword", password)
+                } else {
+                    localStorage.removeItem("rememberedEmail")
+                    localStorage.removeItem("rememberedPassword")
+                }
+
                 navigate("/")
             } else {
                 setError(data.message || "Login failed. Check your credentials.")
@@ -123,9 +143,14 @@ const Login = () => {
                                 />
                             </div>
 
-                            {/* Remember */}
+                            {/* Remember Me */}
                             <div className="flex items-center gap-3">
-                                <input type="checkbox" className="rounded border-gray-300" />
+                                <input
+                                    type="checkbox"
+                                    className="rounded border-gray-300"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                />
                                 <span className="text-sm text-gray-600">Remember Me</span>
                             </div>
 

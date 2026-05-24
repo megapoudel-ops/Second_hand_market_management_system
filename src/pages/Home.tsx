@@ -1,4 +1,4 @@
-import HeroImage from "../assets/hero-image.jpg"
+// import HeroImage from "../assets/hero-image.jpg"
 import FeatureItem from "../components/Home/FeatureItem"
 import VerifiedImage from "../assets/verified.png"
 import DeliveryImage from "../assets/delivery.png"

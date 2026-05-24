@@ -48,3 +48,11 @@ export async function getTransactions(token: string) {
   })
   return res.json()
 }
+export async function verifyEmail(token: string) {
+  const res = await fetch(`${AUTH_URL}/api/auth/verify-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token })
+  })
+  return res.json()
+}
