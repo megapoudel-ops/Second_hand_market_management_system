@@ -2,6 +2,7 @@ import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes/route";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import FloatingButton from "./components/FloatingButton";
 
 function App() {
   return (
@@ -11,6 +12,9 @@ function App() {
         <AppRoutes />
         <Footer />
       </div>
+
+      {/* Floating Button */}
+      <FloatingButton />
     </BrowserRouter>
   );
 }

@@ -41,13 +41,18 @@ function FilterSection({
 
 function FilterCheckbox({
     label,
-    checked = false
+    checked,
+    onChange,
 }: {
-    label: String,
-    checked?: boolean
+    label: string;
+    checked: boolean;
+    onChange: () => void;
 }) {
     return (
-        <div className="flex items-center gap-3">
+        <div
+            onClick={onChange}
+            className="flex items-center gap-3 cursor-pointer"
+        >
             <Checkbox checked={checked} />
 
             <label className="text-sm text-gray-600 cursor-pointer">
@@ -58,7 +63,13 @@ function FilterCheckbox({
 }
 
 const Books = () => {
+
     const [showFilters, setShowFilters] = useState(false);
+
+    const [filters, setFilters] = useState({
+        genre: ["Tech"], // default checked
+        format: ["Paperback"],
+    });
 
     const products = [
         {
@@ -88,29 +99,42 @@ const Books = () => {
         },
         {
             id: 4,
-            title: "Digital Design Ethos",
-            author: "Julian Wright",
+            title: "It Starts With US",
+            author: "Colleen Hoover",
             price: "Rs. 45.00",
             image:
-                "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=800&auto=format&fit=crop",
+                "https://udreview.com/wp-content/uploads/2023/10/it-starts-with-us-EMILY-MATEJA-1024x683.jpeg",
         },
         {
             id: 5,
-            title: "The Art of Negotiation",
-            author: "Peter Oliver",
+            title: "The Metamorphosis",
+            author: "Franz Kafka",
             price: "Rs. 52.00",
             image:
-                "https://m.media-amazon.com/images/I/81uMrgXQb8L._UF1000,1000_QL80_.jpg",
+                "https://mir-s3-cdn-cf.behance.net/project_modules/fs/3bac8717144475.562b65a5ad602.jpg",
         },
         {
             id: 6,
-            title: "Future Education",
-            author: "Clara Moss",
+            title: "It Ends With US",
+            author: "Colleen Hoover",
             price: "Rs. 19.99",
             image:
-                "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=800&auto=format&fit=crop",
+                "https://miro.medium.com/1*wNyDXngQmFzzfRcwS3CBKg.jpeg",
         },
     ];
+
+    const toggleFilter = (type: "genre" | "format", value: string) => {
+        setFilters((prev) => {
+            const exists = prev[type].includes(value);
+
+            return {
+                ...prev,
+                [type]: exists
+                    ? prev[type].filter((v) => v !== value) // remove
+                    : [...prev[type], value], // add
+            };
+        });
+    };
 
     return (
         <div className="min-h-screen py-6 px-4 sm:px-6 xl:px-0">
@@ -169,16 +193,25 @@ const Books = () => {
 
                         <div className="space-y-6">
                             <FilterSection title="Genre">
-                                <FilterCheckbox label="Fiction" />
-                                <FilterCheckbox label="Tech" checked />
-                                <FilterCheckbox label="Business" />
-                                <FilterCheckbox label="Arts" />
+                                {["Fiction", "Tech", "Business", "Arts"].map((item) => (
+                                    <FilterCheckbox
+                                        key={item}
+                                        label={item}
+                                        checked={filters.genre.includes(item)}
+                                        onChange={() => toggleFilter("genre", item)}
+                                    />
+                                ))}
                             </FilterSection>
 
                             <FilterSection title="Format">
-                                <FilterCheckbox label="Hardcover" />
-                                <FilterCheckbox label="Paperback" checked />
-                                <FilterCheckbox label="E-book" />
+                                {["Hardcover", "Paperback", "E-book"].map((item) => (
+                                    <FilterCheckbox
+                                        key={item}
+                                        label={item}
+                                        checked={filters.format.includes(item)}
+                                        onChange={() => toggleFilter("format", item)}
+                                    />
+                                ))}
                             </FilterSection>
 
                             <FilterSection title="Price Range">
@@ -193,6 +226,15 @@ const Books = () => {
                                         <span>Rs. 200+</span>
                                     </div>
                                 </div>
+
+                                <button
+                                    className="w-full mt-6 py-3 rounded-xl text-white font-medium"
+                                    style={{
+                                        backgroundColor: "var(--primary-color)"
+                                    }}
+                                >
+                                    Apply Filters
+                                </button>
                             </FilterSection>
                         </div>
                     </aside>

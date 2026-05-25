@@ -10,6 +10,7 @@ import Cart from "../pages/Cart";
 import Notifications from "../pages/Notifications";
 import NotFound from "../pages/NotFound";
 import Furniture from "../pages/Furniture";
+import AiColorPalette from "../pages/AIColorPalette";
 
 export default function AppRoutes() {
   return (
@@ -24,6 +25,7 @@ export default function AppRoutes() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/furniture" element={<Furniture />} />
       <Route path="/notifications" element={<Notifications />} />
+      <Route path="/ai-color-palette" element={<AiColorPalette />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -41,13 +41,18 @@ function FilterSection({
 
 function FilterCheckbox({
     label,
-    checked = false
+    checked,
+    onChange,
 }: {
-    label: String,
-    checked?: boolean
+    label: string;
+    checked: boolean;
+    onChange: () => void;
 }) {
     return (
-        <div className="flex items-center gap-3">
+        <div
+            onClick={onChange}
+            className="flex items-center gap-3 cursor-pointer"
+        >
             <Checkbox checked={checked} />
 
             <label className="text-sm text-gray-600 cursor-pointer">
@@ -59,7 +64,23 @@ function FilterCheckbox({
 
 const Furniture = () => {
     const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState({
+        type: ["Seating"], // default checked
+        material: ["Wood"],
+    });
 
+    const toggleFilter = (type: "type" | "material", value: string) => {
+        setFilters((prev) => {
+            const exists = prev[type].includes(value);
+
+            return {
+                ...prev,
+                [type]: exists
+                    ? prev[type].filter((v) => v !== value) // remove
+                    : [...prev[type], value], // add
+            };
+        });
+    };
 
     const products = [
         {
@@ -171,18 +192,26 @@ const Furniture = () => {
 
 
                         <div className="space-y-8">
-
-                            <FilterSection title="Type">
-                                <FilterCheckbox label="Desks" />
-                                <FilterCheckbox label="Seating" checked />
-                                <FilterCheckbox label="Lighting" />
-                                <FilterCheckbox label="Storage" />
+                            <FilterSection title="Genre">
+                                {["Desks", "Seating", "Lighting", "Storage"].map((item) => (
+                                    <FilterCheckbox
+                                        key={item}
+                                        label={item}
+                                        checked={filters.type.includes(item)}
+                                        onChange={() => toggleFilter("type", item)}
+                                    />
+                                ))}
                             </FilterSection>
 
                             <FilterSection title="Material">
-                                <FilterCheckbox label="Wood" />
-                                <FilterCheckbox label="Metal" />
-                                <FilterCheckbox label="Fabric" />
+                                {["Wood", "Metal", "Fabric"].map((item) => (
+                                    <FilterCheckbox
+                                        key={item}
+                                        label={item}
+                                        checked={filters.material.includes(item)}
+                                        onChange={() => toggleFilter("material", item)}
+                                    />
+                                ))}
                             </FilterSection>
 
                             <FilterSection title="Price Range">

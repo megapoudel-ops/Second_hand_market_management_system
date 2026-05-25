@@ -32,13 +32,18 @@ function FilterSection({
 
 function FilterCheckbox({
   label,
-  checked = false,
+  checked,
+  onChange,
 }: {
-  label: String;
-  checked?: boolean;
+  label: string;
+  checked: boolean;
+  onChange: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div
+      onClick={onChange}
+      className="flex items-center gap-3 cursor-pointer"
+    >
       <Checkbox checked={checked} />
 
       <label className="text-sm text-gray-600 cursor-pointer">
@@ -51,6 +56,23 @@ function FilterCheckbox({
 const Laptops = () => {
   const [showFilters, setShowFilters] = useState(false);
 
+  const [filters, setFilters] = useState({
+    brand: ["Dell"], // default checked
+    processor: ["Intel Core i7"],
+  });
+
+  const toggleFilter = (type: "brand" | "processor", value: string) => {
+    setFilters((prev) => {
+      const exists = prev[type].includes(value);
+
+      return {
+        ...prev,
+        [type]: exists
+          ? prev[type].filter((v) => v !== value) // remove
+          : [...prev[type], value], // add
+      };
+    });
+  };
   const products = [
     {
       id: 1,
@@ -86,7 +108,7 @@ const Laptops = () => {
       price: "Rs. 1,850.00",
       rating: 4.9,
       image:
-        "https://laptopmedia.com/wp-content/uploads/2024/09/IMG_6A1E31148A6D-1.jpeg",
+        "https://cdn.mos.cms.futurecdn.net/NEjTSZHivorAaAwbqtf3pf.jpg",
     },
     {
       id: 5,
@@ -166,11 +188,16 @@ const Laptops = () => {
           </h1>
 
           <div className="space-y-6">
-            <FilterSection title="Brand">
-              <FilterCheckbox label="Apple" />
-              <FilterCheckbox label="Dell" checked />
-              <FilterCheckbox label="Lenovo" />
-              <FilterCheckbox label="ASUS" />
+
+            <FilterSection title="brand">
+              {["Apple", "Dell", "Lenovo", "ASUS"].map((item) => (
+                <FilterCheckbox
+                  key={item}
+                  label={item}
+                  checked={filters.brand.includes(item)}
+                  onChange={() => toggleFilter("brand", item)}
+                />
+              ))}
             </FilterSection>
 
             <FilterSection title="Price Range">
@@ -184,15 +211,30 @@ const Laptops = () => {
                   <span>Rs. 500</span>
                   <span>Rs. 5,000+</span>
                 </div>
+
               </div>
             </FilterSection>
 
             <FilterSection title="Processor">
-              <FilterCheckbox label="Intel Core i5" />
-              <FilterCheckbox label="Intel Core i7" checked />
-              <FilterCheckbox label="Apple M3 Pro" />
+              {["Intel Core i5", "Intel Core i7", "Apple M3 Pro"].map((item) => (
+                <FilterCheckbox
+                  key={item}
+                  label={item}
+                  checked={filters.processor.includes(item)}
+                  onChange={() => toggleFilter("processor", item)}
+                />
+              ))}
             </FilterSection>
-            
+
+
+            <button
+              className="w-full mt-6 py-3 rounded-xl text-white font-medium"
+              style={{
+                backgroundColor: "var(--primary-color)"
+              }}
+            >
+              Apply Filters
+            </button>
           </div>
         </aside>
 
