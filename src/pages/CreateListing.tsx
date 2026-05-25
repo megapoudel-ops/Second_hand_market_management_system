@@ -1,7 +1,16 @@
-import { BookOpen, Laptop, Sofa, UploadCloud } from "lucide-react";
-import Header from "../components/Header"
+import { useState } from "react";
+import {
+    BookOpen,
+    Laptop,
+    Sofa,
+    UploadCloud
+} from "lucide-react";
+
+import Header from "../components/Header";
 
 const CreateListing = () => {
+    const [selectedCategory, setSelectedCategory] = useState("");
+
     const categories = [
         {
             title: "Laptops",
@@ -21,12 +30,18 @@ const CreateListing = () => {
     ];
 
     return (
-        <div>
+        <div className="px-4 sm:px-6 lg:px-8">
             <div className="pt-12 pb-6">
                 <Header
                     title="Create a New Listing"
-                    subtitle="Turn your pre-owned items into something new. Follow the steps below to showcase </br> your listing to the Second Sync community."
-                />
+                    subtitle= "Turn your pre-owned items into something new.  Follow the steps below to showcase your listing to the Second Sync community."
+                           
+                        
+                  />          
+                           
+                        
+                    
+                
             </div>
 
             <div className="w-full space-y-8">
@@ -46,13 +61,33 @@ const CreateListing = () => {
                     <div className="grid gap-4 md:grid-cols-3 w-full">
                         {categories.map((item, index) => {
                             const Icon = item.icon;
+                            const isSelected =
+                                selectedCategory === item.title;
 
                             return (
                                 <button
                                     key={index}
-                                    className="rounded-xl p-5 text-left transition hover:border-(--primary-color) hover:bg-(--primary-color)/5"
+                                    type="button"
+                                    onClick={() =>
+                                        setSelectedCategory(item.title)
+                                    }
+                                    className={`rounded-xl border p-5 text-left transition-all duration-200
+                                        
+                                        ${isSelected
+                                            ? "border-(--primary-color) bg-(--primary-color)/10 shadow-md"
+                                            : "border-border hover:border-(--primary-color) hover:bg-(--primary-color)/5"
+                                        }
+                                    `}
                                 >
-                                    <Icon className="mb-4 size-10 text-(--primary-color)" />
+                                    <Icon
+                                        className={`mb-4 size-10
+                                            
+                                            ${isSelected
+                                                ? "text-(--primary-color)"
+                                                : "text-muted-foreground"
+                                            }
+                                        `}
+                                    />
 
                                     <h3 className="font-medium">
                                         {item.title}
@@ -117,8 +152,14 @@ const CreateListing = () => {
                                     <option>
                                         USD - United States Dollar
                                     </option>
-                                    <option>EUR - Euro</option>
-                                    <option>NPR - Nepalese Rupee</option>
+
+                                    <option>
+                                        EUR - Euro
+                                    </option>
+
+                                    <option>
+                                        NPR - Nepalese Rupee
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -227,7 +268,7 @@ const CreateListing = () => {
                                 <input
                                     type="text"
                                     placeholder="e.g. 2022"
-                                    className="h-11 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-primary"
+                                    className="h-11 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-(--primary-color)"
                                 />
                             </div>
 
@@ -239,7 +280,9 @@ const CreateListing = () => {
 
                                 <select className="h-11 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-(--primary-color)">
                                     <option>No warranty</option>
+
                                     <option>Under warranty</option>
+
                                     <option>Expired warranty</option>
                                 </select>
                             </div>
@@ -247,6 +290,7 @@ const CreateListing = () => {
                     </div>
                 </section>
 
+                {/* FOOTER */}
                 <div className="flex flex-col gap-4 border-t pt-6 md:flex-row md:items-center md:justify-between">
 
                     <p className="text-sm text-muted-foreground">
@@ -265,7 +309,7 @@ const CreateListing = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default CreateListing
+export default CreateListing;
