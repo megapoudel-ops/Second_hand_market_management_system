@@ -3,6 +3,7 @@ import AppRoutes from "./routes/route";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { CartProvider } from "./context/CartContext";
+import FloatingButton from "./components/FloatingButton";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <AppRoutes />
           <Footer />
         </div>
+        <FloatingButton />
       </CartProvider>
     </BrowserRouter>
   );

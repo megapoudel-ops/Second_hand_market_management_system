@@ -72,9 +72,11 @@ const Navbar = () => {
                         </Link>
                     )}
 
-                    <button className='text-sm bg-green-900 text-white rounded-md px-4 py-2 hover:opacity-90 transition'>
-                        Add Post
-                    </button>
+                    <Link to='/create-listing'>
+                        <button className='text-sm bg-green-900 text-white rounded-md px-4 py-2 hover:opacity-90 transition'>
+                            Add Post
+                        </button>
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}

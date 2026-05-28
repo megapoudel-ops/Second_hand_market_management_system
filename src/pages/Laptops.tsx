@@ -31,13 +31,18 @@ function FilterSection({
 
 function FilterCheckbox({
   label,
-  checked = false,
+  checked,
+  onChange,
 }: {
-  label: String;
-  checked?: boolean;
+  label: string;
+  checked: boolean;
+  onChange: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div
+      onClick={onChange}
+      className="flex items-center gap-3 cursor-pointer"
+    >
       <Checkbox checked={checked} />
       <label className="text-sm text-gray-600 cursor-pointer">{label}</label>
     </div>
@@ -50,6 +55,10 @@ const Laptops = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({
+    brand: ["Dell"],
+    processor: ["Intel Core i7"],
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -68,6 +77,19 @@ const Laptops = () => {
       .catch(() => setLoading(false))
   }, [])
 
+  const toggleFilter = (type: "brand" | "processor", value: string) => {
+    setFilters((prev) => {
+      const exists = prev[type].includes(value);
+
+      return {
+        ...prev,
+        [type]: exists
+          ? prev[type].filter((v) => v !== value)
+          : [...prev[type], value],
+      };
+    });
+  };
+
   const fallbackProducts = [
     {
       id: 1,
@@ -75,7 +97,8 @@ const Laptops = () => {
       description: "16GB RAM, 512GB SSD - Space Black",
       price: "1999.00",
       rating: 4.9,
-      image: "https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://sm.mashable.com/mashable_sea/review/m/m3-macbook/m3-macbook-pro-14-inch-review-why-you-should-buy-this-apple_r785.jpg",
     },
     {
       id: 2,
@@ -83,7 +106,8 @@ const Laptops = () => {
       description: "Core i9, 32GB RAM, RTX 4060",
       price: "2449.00",
       rating: 4.8,
-      image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://sm.pcmag.com/t/pcmag_au/review/d/dell-xps-1/dell-xps-15-9530-2023_6h7m.1920.jpg",
     },
     {
       id: 3,
@@ -91,7 +115,8 @@ const Laptops = () => {
       description: "Ryzen 9, 16GB, RTX 4070 - Eclipse Gray",
       price: "1699.00",
       rating: 4.7,
-      image: "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://www.pcworld.com/wp-content/uploads/2025/04/G14_edited1.jpg?quality=50&strip=all",
     },
     {
       id: 4,
@@ -99,7 +124,8 @@ const Laptops = () => {
       description: "Core i7, 32GB RAM, 1TB SSD",
       price: "1850.00",
       rating: 4.9,
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://cdn.mos.cms.futurecdn.net/NEjTSZHivorAaAwbqtf3pf.jpg",
     },
     {
       id: 5,
@@ -107,7 +133,8 @@ const Laptops = () => {
       description: "Dual-mode Mini-LED, RTX 4080",
       price: "3299.00",
       rating: 4.6,
-      image: "https://images.unsplash.com/photo-1504707748692-419802cf939d?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://static0.xdaimages.com/wordpress/wp-content/uploads/2022/11/razer-blade-16-1.jpg",
     },
     {
       id: 6,
@@ -115,7 +142,8 @@ const Laptops = () => {
       description: "8-core CPU, 10-core GPU, 256GB",
       price: "1299.00",
       rating: 4.8,
-      image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://cdn.mos.cms.futurecdn.net/yg6EsCnDYstVq7RueGn68c.jpg",
     },
   ]
 
@@ -176,11 +204,16 @@ const Laptops = () => {
           </h1>
 
           <div className="space-y-6">
-            <FilterSection title="Brand">
-              <FilterCheckbox label="Apple" />
-              <FilterCheckbox label="Dell" checked />
-              <FilterCheckbox label="Lenovo" />
-              <FilterCheckbox label="ASUS" />
+
+            <FilterSection title="brand">
+              {["Apple", "Dell", "Lenovo", "ASUS"].map((item) => (
+                <FilterCheckbox
+                  key={item}
+                  label={item}
+                  checked={filters.brand.includes(item)}
+                  onChange={() => toggleFilter("brand", item)}
+                />
+              ))}
             </FilterSection>
 
             <FilterSection title="Price Range">
@@ -190,14 +223,30 @@ const Laptops = () => {
                   <span>Rs. 500</span>
                   <span>Rs. 5,000+</span>
                 </div>
+
               </div>
             </FilterSection>
 
             <FilterSection title="Processor">
-              <FilterCheckbox label="Intel Core i5" />
-              <FilterCheckbox label="Intel Core i7" checked />
-              <FilterCheckbox label="Apple M3 Pro" />
+              {["Intel Core i5", "Intel Core i7", "Apple M3 Pro"].map((item) => (
+                <FilterCheckbox
+                  key={item}
+                  label={item}
+                  checked={filters.processor.includes(item)}
+                  onChange={() => toggleFilter("processor", item)}
+                />
+              ))}
             </FilterSection>
+
+
+            <button
+              className="w-full mt-6 py-3 rounded-xl text-white font-medium"
+              style={{
+                backgroundColor: "var(--primary-color)"
+              }}
+            >
+              Apply Filters
+            </button>
           </div>
         </aside>
 
