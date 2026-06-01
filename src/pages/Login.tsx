@@ -34,6 +34,7 @@ const Login = () => {
 
             if (data.token) {
                 localStorage.setItem("token", data.token)
+                window.dispatchEvent(new Event("auth-changed"))
 
                 if (rememberMe) {
                     localStorage.setItem("rememberedEmail", email)
@@ -45,7 +46,7 @@ const Login = () => {
 
                 navigate("/")
             } else {
-                setError(data.message || "Login failed. Check your credentials.")
+                setError(data.error || data.message || "Login failed. Check your credentials.")
             }
         } catch {
             setError("Something went wrong. Try again.")
@@ -55,8 +56,8 @@ const Login = () => {
     }
 
     return (
-        <div className="h-[90svh] flex items-center justify-center ">
-            <div className="w-full h-[70svh] overflow-hidden rounded-2xl bg-white shadow-2xl grid md:grid-cols-2">
+        <div className="min-h-[calc(100svh-96px)] flex items-center justify-center px-4 py-10">
+            <div className="w-full max-w-7xl min-h-[680px] overflow-hidden rounded-2xl bg-white shadow-2xl grid md:grid-cols-2">
 
                 {/* Left Section */}
                 <div
