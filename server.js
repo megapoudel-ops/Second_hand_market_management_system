@@ -11,38 +11,31 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(cors());
 app.use(express.json());
 
-// Detect damage in books, furniture and laptops
-app.post("/detect", upload.single("image"), async (req, res) => {
+// Analyze image - extract color palette and suggest furniture
+app.post("/analyze", upload.single("image"), async (req, res) => {
   try {
     const imageData = req.file.buffer.toString("base64");
     const mimeType = req.file.mimetype;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = `You are a damage detection expert. Analyze this image carefully and detect any damage on books, furniture, or laptops/electronics.
-
-    For each item you find, assess:
-    - What the item is
-    - Condition (Good/Fair/Damaged/Severely Damaged)
-    - What damage is visible (scratches, cracks, tears, stains, dents etc)
-    - Estimated condition percentage (100% = perfect, 0% = destroyed)
-    - Whether it is still sellable as second hand
+    const prompt = `Analyze this room image and provide:
+    1. COLOR PALETTE: Extract exactly 3 main colors as hex codes with names (Primary, Accent, Neutral)
+    2. FURNITURE SUGGESTIONS: Suggest 3 furniture items that match the room colors with reasons
 
     Respond ONLY in this exact JSON format, no extra text:
     {
-      "items_detected": [
-        {
-          "item": "Laptop",
-          "condition": "Damaged",
-          "damage_description": "Crack on screen, dent on corner",
-          "condition_percentage": 60,
-          "sellable": true,
-          "suggested_price_reduction": "30%"
-        }
+      "palette": [
+        { "name": "Primary", "hex": "#006A61" },
+        { "name": "Accent", "hex": "#86F2E4" },
+        { "name": "Neutral", "hex": "#0B1C30" }
       ],
-      "overall_assessment": "Fair condition with some damage",
-      "sellable_overall": true,
-      "summary": "The items show moderate wear and tear but are still functional"
+      "furniture_suggestions": [
+        { "item": "Sofa", "color": "#006A61", "reason": "Matches primary tone" },
+        { "item": "Coffee Table", "color": "#86F2E4", "reason": "Complements accent" },
+        { "item": "Bookshelf", "color": "#0B1C30", "reason": "Adds depth" }
+      ],
+      "css_export": ":root { --primary: #006A61; --accent: #86F2E4; --neutral: #0B1C30; }"
     }`;
 
     const result = await model.generateContent([
@@ -63,10 +56,30 @@ app.post("/detect", upload.single("image"), async (req, res) => {
 
   } catch (error) {
     console.error("FULL ERROR:", error.message);
-    res.status(500).json({ error: "Detection failed" });
+    res.status(500).json({ error: "Analysis failed" });
   }
 });
 
-app.listen(5001, () => {
-  console.log("Damage Detection Backend running on port 5001");
+// Save palette to collection
+app.post("/save", express.json(), (req, res) => {
+  const { palette, name } = req.body;
+  res.json({
+    success: true,
+    message: "Palette saved to collection!",
+    saved: { name, palette, savedAt: new Date() }
+  });
+});
+
+// Export palette as CSS/SCSS
+app.post("/export", express.json(), (req, res) => {
+  const { palette } = req.body;
+
+  const css = `:root {\n${palette.map(c => `  --${c.name.toLowerCase()}: ${c.hex};`).join("\n")}\n}`;
+  const scss = `// Color Palette\n${palette.map(c => `$${c.name.toLowerCase()}: ${c.hex};`).join("\n")}`;
+
+  res.json({ css, scss });
+});
+
+app.listen(4000, () => {
+  console.log("Color Palette Backend running on port 4000");
 });
