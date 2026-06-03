@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import Header from "../components/Header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function FilterSection({
   title,
@@ -24,7 +24,6 @@ function FilterSection({
       <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">
         {title}
       </h3>
-
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -45,21 +44,38 @@ function FilterCheckbox({
       className="flex items-center gap-3 cursor-pointer"
     >
       <Checkbox checked={checked} />
-
-      <label className="text-sm text-gray-600 cursor-pointer">
-        {label}
-      </label>
+      <label className="text-sm text-gray-600 cursor-pointer">{label}</label>
     </div>
   );
 }
 
+const AD_API_URL = import.meta.env.VITE_AD_API_URL
+
 const Laptops = () => {
   const [showFilters, setShowFilters] = useState(false);
-
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
-    brand: ["Dell"], // default checked
+    brand: ["Dell"],
     processor: ["Intel Core i7"],
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    fetch(`${AD_API_URL}/ads?category=laptop`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.ads && data.ads.length > 0) {
+          setProducts(data.ads)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
 
   const toggleFilter = (type: "brand" | "processor", value: string) => {
     setFilters((prev) => {
@@ -68,17 +84,18 @@ const Laptops = () => {
       return {
         ...prev,
         [type]: exists
-          ? prev[type].filter((v) => v !== value) // remove
-          : [...prev[type], value], // add
+          ? prev[type].filter((v) => v !== value)
+          : [...prev[type], value],
       };
     });
   };
-  const products = [
+
+  const fallbackProducts = [
     {
       id: 1,
       title: 'MacBook Pro 14" M3',
       description: "16GB RAM, 512GB SSD - Space Black",
-      price: "Rs. 1,999.00",
+      price: "1999.00",
       rating: 4.9,
       image:
         "https://sm.mashable.com/mashable_sea/review/m/m3-macbook/m3-macbook-pro-14-inch-review-why-you-should-buy-this-apple_r785.jpg",
@@ -87,7 +104,7 @@ const Laptops = () => {
       id: 2,
       title: "Dell XPS 15 9530",
       description: "Core i9, 32GB RAM, RTX 4060",
-      price: "Rs. 2,449.00",
+      price: "2449.00",
       rating: 4.8,
       image:
         "https://sm.pcmag.com/t/pcmag_au/review/d/dell-xps-1/dell-xps-15-9530-2023_6h7m.1920.jpg",
@@ -96,7 +113,7 @@ const Laptops = () => {
       id: 3,
       title: "ASUS ROG Zephyrus G14",
       description: "Ryzen 9, 16GB, RTX 4070 - Eclipse Gray",
-      price: "Rs. 1,699.00",
+      price: "1699.00",
       rating: 4.7,
       image:
         "https://www.pcworld.com/wp-content/uploads/2025/04/G14_edited1.jpg?quality=50&strip=all",
@@ -105,7 +122,7 @@ const Laptops = () => {
       id: 4,
       title: "Lenovo ThinkPad X1 Carbon",
       description: "Core i7, 32GB RAM, 1TB SSD",
-      price: "Rs. 1,850.00",
+      price: "1850.00",
       rating: 4.9,
       image:
         "https://cdn.mos.cms.futurecdn.net/NEjTSZHivorAaAwbqtf3pf.jpg",
@@ -114,7 +131,7 @@ const Laptops = () => {
       id: 5,
       title: "Razer Blade 16",
       description: "Dual-mode Mini-LED, RTX 4080",
-      price: "Rs. 3,299.00",
+      price: "3299.00",
       rating: 4.6,
       image:
         "https://static0.xdaimages.com/wordpress/wp-content/uploads/2022/11/razer-blade-16-1.jpg",
@@ -123,22 +140,29 @@ const Laptops = () => {
       id: 6,
       title: 'MacBook Air 15" M3',
       description: "8-core CPU, 10-core GPU, 256GB",
-      price: "Rs. 1,299.00",
+      price: "1299.00",
       rating: 4.8,
       image:
         "https://cdn.mos.cms.futurecdn.net/yg6EsCnDYstVq7RueGn68c.jpg",
     },
-  ];
+  ]
+
+  const displayProducts = products.length > 0 ? products.map((p: any) => ({
+    id: p._id || p.id,
+    title: p.name || p.title,
+    description: p.description,
+    price: `${p.price}`,
+    rating: p.rating || 4.5,
+    image: p.image || "https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=1200&auto=format&fit=crop"
+  })) : fallbackProducts
 
   return (
     <div className="min-h-screen py-6 px-4 sm:px-6 xl:px-0">
-
       <Header
         title="Premium Laptops"
         subtitle="Discover synchronized performance and design."
       />
 
-      {/* Mobile Filter Button */}
       <div className="lg:hidden mt-8 mb-4">
         <Button
           variant="outline"
@@ -151,8 +175,6 @@ const Laptops = () => {
       </div>
 
       <div className="mt-6 flex gap-6">
-
-        {/* Mobile Overlay */}
         {showFilters && (
           <div
             className="fixed inset-0 bg-black/40 z-40 lg:hidden"
@@ -160,7 +182,6 @@ const Laptops = () => {
           />
         )}
 
-        {/* Sidebar */}
         <aside
           className={`
             fixed lg:static top-0 left-0 h-screen lg:h-auto
@@ -171,18 +192,13 @@ const Laptops = () => {
             lg:translate-x-0 shrink-0
           `}
         >
-          {/* Mobile Header */}
           <div className="flex items-center justify-between mb-8 lg:hidden">
-            <h1 className="text-xl font-semibold">
-              Filters
-            </h1>
-
+            <h1 className="text-xl font-semibold">Filters</h1>
             <button onClick={() => setShowFilters(false)}>
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Desktop Header */}
           <h1 className="hidden lg:block text-2xl font-semibold text-gray-900 mb-8">
             Filters
           </h1>
@@ -202,11 +218,7 @@ const Laptops = () => {
 
             <FilterSection title="Price Range">
               <div className="pt-2">
-                <input
-                  type="range"
-                  className="w-full accent-(--primary-color)"
-                />
-
+                <input type="range" className="w-full accent-(--primary-color)" />
                 <div className="flex justify-between mt-2 text-xs text-gray-500">
                   <span>Rs. 500</span>
                   <span>Rs. 5,000+</span>
@@ -238,84 +250,43 @@ const Laptops = () => {
           </div>
         </aside>
 
-        {/* Content */}
         <main className="flex-1 min-w-0">
-
-          {/* Top Bar */}
           <div className="bg-white rounded-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <p className="text-sm text-gray-500">
-              Showing 24 premium titles
+              {loading ? "Loading..." : `Showing ${displayProducts.length} products`}
             </p>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <span className="text-sm text-gray-500 whitespace-nowrap">
-                Sort by:
-              </span>
-
+              <span className="text-sm text-gray-500 whitespace-nowrap">Sort by:</span>
               <Select defaultValue="newest">
                 <SelectTrigger className="w-full sm:w-52">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-
                 <SelectContent>
-                  <SelectItem value="newest">
-                    Newest Arrivals
-                  </SelectItem>
-
-                  <SelectItem value="popular">
-                    Most Popular
-                  </SelectItem>
-
-                  <SelectItem value="price-low">
-                    Price: Low to High
-                  </SelectItem>
-
-                  <SelectItem value="price-high">
-                    Price: High to Low
-                  </SelectItem>
+                  <SelectItem value="newest">Newest Arrivals</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {displayProducts.map((product) => (
               <LaptopCard key={product.id} product={product} />
             ))}
           </div>
 
-          {/* Pagination */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-12">
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-white"
-            >
+            <Button variant="outline" size="icon" className="bg-white">
               <ChevronLeft className="w-4 h-4" />
             </Button>
-
-            <Button className="text-white w-9 h-9">
-              1
-            </Button>
-
-            <Button variant="ghost" className="w-9 h-9">
-              2
-            </Button>
-
-            <Button variant="ghost" className="w-9 h-9">
-              3
-            </Button>
-
-            <span className="text-gray-400 px-1">
-              ...
-            </span>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-white"
-            >
+            <Button className="text-white w-9 h-9">1</Button>
+            <Button variant="ghost" className="w-9 h-9">2</Button>
+            <Button variant="ghost" className="w-9 h-9">3</Button>
+            <span className="text-gray-400 px-1">...</span>
+            <Button variant="outline" size="icon" className="bg-white">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
