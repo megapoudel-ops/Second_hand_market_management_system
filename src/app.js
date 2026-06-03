@@ -1,34 +1,55 @@
-require("dotenv").config({ quiet: true });
-const express = require("express");
-const connectDB = require("./config/db");
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
-const authRoutes = require("./routes/auth.routes");
+const connectDB = require('./config/db');
+const config = require('./config/env');
+const routes = require('./routes');
+const { notFound, errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(helmet());
+app.use(
+  cors({
+    origin: config.corsOrigin,
+    credentials: config.corsOrigin !== '*'
+  })
+);
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/auth", authRoutes);
+if (config.nodeEnv !== 'test') {
+  app.use(morgan('dev'));
+}
 
-const startServer = async () => {
-  try {
-    await connectDB();
+app.use(
+  rateLimit({
+    windowMs: config.rateLimitWindowMs,
+    limit: config.rateLimitMax,
+    standardHeaders: true,
+    legacyHeaders: false
+  })
+);
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error.message);
+app.use('/api/v1', routes);
+app.use(notFound);
+app.use(errorHandler);
 
-    if (error.code === "ECONNREFUSED" && error.hostname?.includes("mongodb.net")) {
-      console.error(
-        "MongoDB Atlas DNS lookup was refused. Check your internet/DNS settings, firewall/VPN, and Atlas connection string."
-      );
-    }
+async function start() {
+  await connectDB();
+  app.listen(config.port, () => {
+    console.log(`Notification API running on port ${config.port}`);
+  });
+}
 
+if (require.main === module) {
+  start().catch((error) => {
+    console.error('Failed to start server:', error.message);
     process.exit(1);
-  }
-};
+  });
+}
 
-startServer();
+module.exports = app;

@@ -1,73 +1,106 @@
-# React + TypeScript + Vite
+# Notification API
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+REST API for notification management in a secondhand market management system.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- JWT authentication.
+- User registration and login for API testing.
+- Notification CRUD.
+- In-app notifications.
+- Email, SMS, and push provider abstraction.
+- Notification templates.
+- Template-based notification creation with variables.
+- User notification preferences.
+- Mark read, mark unread, mark all read.
+- Bulk notification creation.
+- Scheduled notification dispatch.
+- Basic notification stats.
+- Centralized validation, error handling, and response formatting.
 
-## React Compiler
+## Folder Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+  app.js
+  config/
+  controllers/
+  middleware/
+  models/
+  routes/
+  services/
+  utils/
+  validators/
+tests/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
+The API will run on `http://localhost:5000` by default.
+
+MongoDB is required before starting the API. For local development, either install
+and start MongoDB on `127.0.0.1:27017`, or run:
+
+```bash
+docker compose up -d mongo
+```
+
+If you use MongoDB Atlas or another remote database, set `MONGO_URI` in `.env`
+to that connection string before running `npm run dev`.
+
+## Main Routes
+
+- `GET /api/v1/health`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/notifications`
+- `POST /api/v1/notifications`
+- `POST /api/v1/notifications/bulk`
+- `POST /api/v1/notifications/dispatch-due`
+- `GET /api/v1/notifications/stats`
+- `PATCH /api/v1/notifications/:id/read`
+- `PATCH /api/v1/notifications/:id/unread`
+- `PATCH /api/v1/notifications/read-all`
+- `DELETE /api/v1/notifications/:id`
+- `GET /api/v1/templates`
+- `POST /api/v1/templates`
+- `GET /api/v1/preferences/me`
+- `PUT /api/v1/preferences/me`
+
+## Example Notification Payload
+
+```json
+{
+  "recipient": "USER_ID",
+  "title": "New message about your listing",
+  "message": "A buyer asked about your used laptop.",
+  "type": "message",
+  "channels": ["in_app", "email"],
+  "priority": "normal",
+  "metadata": {
+    "listingId": "LISTING_ID"
+  }
+}
+```
+
+## Example Template Notification Payload
+
+```json
+{
+  "recipient": "USER_ID",
+  "templateKey": "listing_message",
+  "variables": {
+    "buyerName": "Asha",
+    "listingTitle": "Used laptop"
   },
-])
+  "metadata": {
+    "listingId": "LISTING_ID"
+  }
+}
 ```

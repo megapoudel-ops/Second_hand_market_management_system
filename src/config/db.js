@@ -1,26 +1,31 @@
-const dns = require("dns");
-const mongoose = require("mongoose");
+const dns = require('dns');
+const mongoose = require('mongoose');
+const config = require('./env');
 
-const connectDB = async () => {
-  if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is not set in .env");
-  }
+async function connectDB() {
+  mongoose.set('strictQuery', true);
 
-  if (process.env.MONGO_DNS_SERVERS) {
-    const servers = process.env.MONGO_DNS_SERVERS.split(",")
-      .map((server) => server.trim())
-      .filter(Boolean);
-
-    if (servers.length > 0) {
-      dns.setServers(servers);
+  try {
+    if (config.mongoDnsServers.length > 0) {
+      dns.setServers(config.mongoDnsServers);
     }
+
+    const connection = await mongoose.connect(config.mongoUri, {
+      serverSelectionTimeoutMS: config.mongoServerSelectionTimeoutMs
+    });
+    console.log(`MongoDB connected: ${connection.connection.host}`);
+    return connection;
+  } catch (error) {
+    if (error.name === 'MongooseServerSelectionError') {
+      throw new Error(
+        `Unable to connect to MongoDB at ${config.mongoUri}. ` +
+          'Check Atlas network access, database credentials, and DNS. ' +
+          `Current DNS servers: ${config.mongoDnsServers.join(', ') || 'system default'}.`
+      );
+    }
+
+    throw error;
   }
-
-  await mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 10000,
-  });
-
-  console.log("DB Connected");
-};
+}
 
 module.exports = connectDB;

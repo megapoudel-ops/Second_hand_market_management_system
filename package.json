@@ -1,20 +1,38 @@
 {
-  "name": "color-palette-backend",
+  "name": "notification-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Notification API for a secondhand market management system",
+  "main": "src/app.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "lint": "eslint src --ext .js",
+    "test": "node --test \"tests/**/*.test.js\""
   },
-  "keywords": [],
+  "keywords": [
+    "notification",
+    "api",
+    "marketplace",
+    "secondhand-market"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "multer": "^2.1.1"
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0",
+    "nodemailer": "^8.0.7"
+  },
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "nodemon": "^3.1.9"
   }
 }

@@ -1,135 +1,51 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const User = require('../models/user.model');
+const Preference = require('../models/preference.model');
+const ApiError = require('../utils/apiError');
+const asyncHandler = require('../utils/asyncHandler');
+const { success } = require('../utils/apiResponse');
+const { signToken } = require('../utils/token');
 
-const normalizeEmail = (email = "") => email.trim().toLowerCase();
+const register = asyncHandler(async (req, res) => {
+  const existingUser = await User.findOne({ email: req.body.email });
 
-const isValidGmailAddress = (email = "") => {
-  const normalizedEmail = normalizeEmail(email);
-  const [localPart, domain] = normalizedEmail.split("@");
-
-  if (domain !== "gmail.com" || !localPart) {
-    return false;
+  if (existingUser) {
+    throw new ApiError(409, 'Email is already registered');
   }
 
-  if (localPart.length < 6 || localPart.length > 30) {
-    return false;
-  }
+  const user = await User.create(req.body);
+  await Preference.create({ user: user._id });
 
-  if (localPart.startsWith(".") || localPart.endsWith(".") || localPart.includes("..")) {
-    return false;
-  }
+  const token = signToken(user);
 
-  return /^[a-z0-9.]+$/.test(localPart);
-};
-
-const getTokenExpiry = (rememberMe) => (rememberMe === true ? "30d" : "7d");
-
-//Register API//
-exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
-  const normalizedEmail = normalizeEmail(email);
-
-  if (!name || !normalizedEmail || !password) {
-    return res.status(400).json({ error: "Name, email, and password are required" });
-  }
-
-  if (!isValidGmailAddress(normalizedEmail)) {
-    return res.status(400).json({
-      error: "Only valid Gmail addresses are allowed"
-    });
-  }
-
-  // check if user exists
-  const existing = await User.findOne({ email: normalizedEmail });
-  if (existing) {
-    return res.status(400).json({ error: "User already exists" });
-  }
-
-  // hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // save user
-  const user = await User.create({
-    name: name.trim(),
-    email: normalizedEmail,
-    password: hashedPassword
-  });
-
-  // create token
-  const expiresIn = getTokenExpiry(req.body.rememberMe);
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn }
-  );
-
-  res.status(201).json({
-    message: "User registered",
+  success(res, 201, 'User registered successfully', {
     token,
-    expiresIn
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    }
   });
-};
+});
 
-//Login API//
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  const normalizedEmail = normalizeEmail(email);
+const login = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ email: req.body.email }).select('+password');
 
-  if (!normalizedEmail || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
+  if (!user || !(await user.comparePassword(req.body.password))) {
+    throw new ApiError(401, 'Invalid email or password');
   }
 
-  if (!isValidGmailAddress(normalizedEmail)) {
-    return res.status(400).json({
-      error: "Only valid Gmail addresses are allowed"
-    });
-  }
+  const token = signToken(user);
 
-  // find user
-  const user = await User.findOne({ email: normalizedEmail });
-  if (!user) {
-    return res.status(400).json({ error: "Invalid email or password" });
-  }
-
-  // compare password
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(400).json({ error: "Invalid email or password" });
-  }
-
-  // generate token
-  const expiresIn = getTokenExpiry(req.body.rememberMe);
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn }
-  );
-
-  res.json({
-    message: "Login successful",
+  success(res, 200, 'Login successful', {
     token,
-    expiresIn
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    }
   });
-};
+});
 
-//Profile API//
-exports.profile = async (req, res) => {
-  const user = await User.findById(req.user).select("-password");
-
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  res.json({
-    message: "Profile fetched successfully",
-    user
-  });
-};
-
-//Logout API//
-exports.logout = (req, res) => {
-  res.json({
-    message: "Logout successful"
-  });
-};
+module.exports = { register, login };
