@@ -1,106 +1,62 @@
-# Notification API
+# Security API
 
-REST API for notification management in a secondhand market management system.
-
-## Features
-
-- JWT authentication.
-- User registration and login for API testing.
-- Notification CRUD.
-- In-app notifications.
-- Email, SMS, and push provider abstraction.
-- Notification templates.
-- Template-based notification creation with variables.
-- User notification preferences.
-- Mark read, mark unread, mark all read.
-- Bulk notification creation.
-- Scheduled notification dispatch.
-- Basic notification stats.
-- Centralized validation, error handling, and response formatting.
-
-## Folder Structure
-
-```text
-src/
-  app.js
-  config/
-  controllers/
-  middleware/
-  models/
-  routes/
-  services/
-  utils/
-  validators/
-tests/
-```
+Security endpoints for a secondhand market management system.
 
 ## Setup
 
+1. Install dependencies:
+
 ```bash
 npm install
-cp .env.example .env
+```
+
+2. Create `.env` from `.env.example` and set `MONGO_URI` and `JWT_SECRET`.
+
+3. Start the server:
+
+```bash
 npm run dev
 ```
 
-The API will run on `http://localhost:5000` by default.
+## Endpoints
 
-MongoDB is required before starting the API. For local development, either install
-and start MongoDB on `127.0.0.1:27017`, or run:
+All security endpoints require:
 
-```bash
-docker compose up -d mongo
+```http
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
 ```
 
-If you use MongoDB Atlas or another remote database, set `MONGO_URI` in `.env`
-to that connection string before running `npm run dev`.
+### POST `/api/security/pin-set`
 
-## Main Routes
-
-- `GET /api/v1/health`
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/notifications`
-- `POST /api/v1/notifications`
-- `POST /api/v1/notifications/bulk`
-- `POST /api/v1/notifications/dispatch-due`
-- `GET /api/v1/notifications/stats`
-- `PATCH /api/v1/notifications/:id/read`
-- `PATCH /api/v1/notifications/:id/unread`
-- `PATCH /api/v1/notifications/read-all`
-- `DELETE /api/v1/notifications/:id`
-- `GET /api/v1/templates`
-- `POST /api/v1/templates`
-- `GET /api/v1/preferences/me`
-- `PUT /api/v1/preferences/me`
-
-## Example Notification Payload
+Sets or updates the authenticated user's security PIN.
 
 ```json
 {
-  "recipient": "USER_ID",
-  "title": "New message about your listing",
-  "message": "A buyer asked about your used laptop.",
-  "type": "message",
-  "channels": ["in_app", "email"],
-  "priority": "normal",
-  "metadata": {
-    "listingId": "LISTING_ID"
-  }
+  "pin": "1234",
+  "confirmPin": "1234"
 }
 ```
 
-## Example Template Notification Payload
+### POST `/api/security/pin-verify`
+
+Verifies the authenticated user's security PIN.
 
 ```json
 {
-  "recipient": "USER_ID",
-  "templateKey": "listing_message",
-  "variables": {
-    "buyerName": "Asha",
-    "listingTitle": "Used laptop"
-  },
-  "metadata": {
-    "listingId": "LISTING_ID"
-  }
+  "pin": "1234"
 }
 ```
+
+### POST `/api/security/change-password`
+
+Changes the authenticated user's password.
+
+```json
+{
+  "currentPassword": "oldPassword123",
+  "newPassword": "newPassword123",
+  "confirmPassword": "newPassword123"
+}
+```
+

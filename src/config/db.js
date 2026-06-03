@@ -1,31 +1,43 @@
-const dns = require('dns');
 const mongoose = require('mongoose');
-const config = require('./env');
+const dns = require('dns');
 
-async function connectDB() {
-  mongoose.set('strictQuery', true);
-
+const connectDB = async () => {
   try {
-    if (config.mongoDnsServers.length > 0) {
-      dns.setServers(config.mongoDnsServers);
+    const mongoUri = process.env.MONGO_URI;
+
+    if (!mongoUri) {
+      throw new Error('MONGO_URI is not configured');
     }
 
-    const connection = await mongoose.connect(config.mongoUri, {
-      serverSelectionTimeoutMS: config.mongoServerSelectionTimeoutMs
+    if (process.env.MONGO_DNS_SERVERS) {
+      const dnsServers = process.env.MONGO_DNS_SERVERS
+        .split(',')
+        .map((server) => server.trim())
+        .filter(Boolean);
+
+      if (dnsServers.length > 0) {
+        dns.setServers(dnsServers);
+      }
+    }
+
+    const timeoutMs = Number(process.env.MONGO_TIMEOUT_MS) || 10000;
+    const connection = mongoose.connect(mongoUri, {
+      connectTimeoutMS: timeoutMs,
+      serverSelectionTimeoutMS: timeoutMs,
     });
-    console.log(`MongoDB connected: ${connection.connection.host}`);
-    return connection;
-  } catch (error) {
-    if (error.name === 'MongooseServerSelectionError') {
-      throw new Error(
-        `Unable to connect to MongoDB at ${config.mongoUri}. ` +
-          'Check Atlas network access, database credentials, and DNS. ' +
-          `Current DNS servers: ${config.mongoDnsServers.join(', ') || 'system default'}.`
-      );
-    }
 
-    throw error;
+    await Promise.race([
+      connection,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`MongoDB connection timed out after ${timeoutMs}ms`)), timeoutMs);
+      }),
+    ]);
+
+    console.log('MongoDB connected');
+  } catch (error) {
+    console.error(`MongoDB connection failed: ${error.message}`);
+    process.exit(1);
   }
-}
+};
 
 module.exports = connectDB;

@@ -1,55 +1,58 @@
 const express = require('express');
-const helmet = require('helmet');
 const cors = require('cors');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const config = require('./config/env');
-const routes = require('./routes');
-const { notFound, errorHandler } = require('./middleware/error.middleware');
+const securityRoutes = require('./routes/securityRoutes');
+
+dotenv.config();
 
 const app = express();
+const port = process.env.PORT || 5000;
 
-app.use(helmet());
-app.use(
-  cors({
-    origin: config.corsOrigin,
-    credentials: config.corsOrigin !== '*'
-  })
-);
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(express.json());
 
-if (config.nodeEnv !== 'test') {
-  app.use(morgan('dev'));
-}
-
-app.use(
-  rateLimit({
-    windowMs: config.rateLimitWindowMs,
-    limit: config.rateLimitMax,
-    standardHeaders: true,
-    legacyHeaders: false
-  })
-);
-
-app.use('/api/v1', routes);
-app.use(notFound);
-app.use(errorHandler);
-
-async function start() {
-  await connectDB();
-  app.listen(config.port, () => {
-    console.log(`Notification API running on port ${config.port}`);
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Security API is running',
   });
-}
+});
+
+app.use('/api/security', securityRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+  });
+});
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal server error',
+  });
+});
+
+const startServer = async () => {
+  await connectDB();
+
+  return app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+};
 
 if (require.main === module) {
-  start().catch((error) => {
-    console.error('Failed to start server:', error.message);
+  startServer().catch((error) => {
+    console.error(`Server failed to start: ${error.message}`);
     process.exit(1);
   });
 }
 
-module.exports = app;
+module.exports = {
+  app,
+  startServer,
+};
