@@ -1,0 +1,328 @@
+import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Checkbox } from "../components/ui/checkbox";
+import LaptopCard from "../components/Laptops/LaptopCard";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import Header from "../components/Header";
+import { useState } from "react";
+
+function FilterSection({
+  title,
+  children,
+}: {
+  title: String;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="pb-6 border-b border-gray-200">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">
+        {title}
+      </h3>
+
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function FilterCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <div
+      onClick={onChange}
+      className="flex items-center gap-3 cursor-pointer"
+    >
+      <Checkbox checked={checked} />
+
+      <label className="text-sm text-gray-600 cursor-pointer">
+        {label}
+      </label>
+    </div>
+  );
+}
+
+const Laptops = () => {
+  const [showFilters, setShowFilters] = useState(false);
+
+  const [filters, setFilters] = useState({
+    brand: ["Dell"], // default checked
+    processor: ["Intel Core i7"],
+  });
+
+  const toggleFilter = (type: "brand" | "processor", value: string) => {
+    setFilters((prev) => {
+      const exists = prev[type].includes(value);
+
+      return {
+        ...prev,
+        [type]: exists
+          ? prev[type].filter((v) => v !== value) // remove
+          : [...prev[type], value], // add
+      };
+    });
+  };
+  const products = [
+    {
+      id: 1,
+      title: 'MacBook Pro 14" M3',
+      description: "16GB RAM, 512GB SSD - Space Black",
+      price: "Rs. 1,999.00",
+      rating: 4.9,
+      image:
+        "https://sm.mashable.com/mashable_sea/review/m/m3-macbook/m3-macbook-pro-14-inch-review-why-you-should-buy-this-apple_r785.jpg",
+    },
+    {
+      id: 2,
+      title: "Dell XPS 15 9530",
+      description: "Core i9, 32GB RAM, RTX 4060",
+      price: "Rs. 2,449.00",
+      rating: 4.8,
+      image:
+        "https://sm.pcmag.com/t/pcmag_au/review/d/dell-xps-1/dell-xps-15-9530-2023_6h7m.1920.jpg",
+    },
+    {
+      id: 3,
+      title: "ASUS ROG Zephyrus G14",
+      description: "Ryzen 9, 16GB, RTX 4070 - Eclipse Gray",
+      price: "Rs. 1,699.00",
+      rating: 4.7,
+      image:
+        "https://www.pcworld.com/wp-content/uploads/2025/04/G14_edited1.jpg?quality=50&strip=all",
+    },
+    {
+      id: 4,
+      title: "Lenovo ThinkPad X1 Carbon",
+      description: "Core i7, 32GB RAM, 1TB SSD",
+      price: "Rs. 1,850.00",
+      rating: 4.9,
+      image:
+        "https://cdn.mos.cms.futurecdn.net/NEjTSZHivorAaAwbqtf3pf.jpg",
+    },
+    {
+      id: 5,
+      title: "Razer Blade 16",
+      description: "Dual-mode Mini-LED, RTX 4080",
+      price: "Rs. 3,299.00",
+      rating: 4.6,
+      image:
+        "https://static0.xdaimages.com/wordpress/wp-content/uploads/2022/11/razer-blade-16-1.jpg",
+    },
+    {
+      id: 6,
+      title: 'MacBook Air 15" M3',
+      description: "8-core CPU, 10-core GPU, 256GB",
+      price: "Rs. 1,299.00",
+      rating: 4.8,
+      image:
+        "https://cdn.mos.cms.futurecdn.net/yg6EsCnDYstVq7RueGn68c.jpg",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen py-6 px-4 sm:px-6 xl:px-0">
+
+      <Header
+        title="Premium Laptops"
+        subtitle="Discover synchronized performance and design."
+      />
+
+      {/* Mobile Filter Button */}
+      <div className="lg:hidden mt-8 mb-4">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => setShowFilters(true)}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Filters
+        </Button>
+      </div>
+
+      <div className="mt-6 flex gap-6">
+
+        {/* Mobile Overlay */}
+        {showFilters && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            onClick={() => setShowFilters(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <aside
+          className={`
+            fixed lg:static top-0 left-0 h-screen lg:h-auto
+            w-72 lg:w-64 bg-white z-50 lg:z-auto
+            p-6 lg:p-0 overflow-y-auto
+            transition-transform duration-300
+            ${showFilters ? "translate-x-0" : "-translate-x-full"}
+            lg:translate-x-0 shrink-0
+          `}
+        >
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between mb-8 lg:hidden">
+            <h1 className="text-xl font-semibold">
+              Filters
+            </h1>
+
+            <button onClick={() => setShowFilters(false)}>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Desktop Header */}
+          <h1 className="hidden lg:block text-2xl font-semibold text-gray-900 mb-8">
+            Filters
+          </h1>
+
+          <div className="space-y-6">
+
+            <FilterSection title="brand">
+              {["Apple", "Dell", "Lenovo", "ASUS"].map((item) => (
+                <FilterCheckbox
+                  key={item}
+                  label={item}
+                  checked={filters.brand.includes(item)}
+                  onChange={() => toggleFilter("brand", item)}
+                />
+              ))}
+            </FilterSection>
+
+            <FilterSection title="Price Range">
+              <div className="pt-2">
+                <input
+                  type="range"
+                  className="w-full accent-(--primary-color)"
+                />
+
+                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                  <span>Rs. 500</span>
+                  <span>Rs. 5,000+</span>
+                </div>
+
+              </div>
+            </FilterSection>
+
+            <FilterSection title="Processor">
+              {["Intel Core i5", "Intel Core i7", "Apple M3 Pro"].map((item) => (
+                <FilterCheckbox
+                  key={item}
+                  label={item}
+                  checked={filters.processor.includes(item)}
+                  onChange={() => toggleFilter("processor", item)}
+                />
+              ))}
+            </FilterSection>
+
+
+            <button
+              className="w-full mt-6 py-3 rounded-xl text-white font-medium"
+              style={{
+                backgroundColor: "var(--primary-color)"
+              }}
+            >
+              Apply Filters
+            </button>
+          </div>
+        </aside>
+
+        {/* Content */}
+        <main className="flex-1 min-w-0">
+
+          {/* Top Bar */}
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <p className="text-sm text-gray-500">
+              Showing 24 premium titles
+            </p>
+
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                Sort by:
+              </span>
+
+              <Select defaultValue="newest">
+                <SelectTrigger className="w-full sm:w-52">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="newest">
+                    Newest Arrivals
+                  </SelectItem>
+
+                  <SelectItem value="popular">
+                    Most Popular
+                  </SelectItem>
+
+                  <SelectItem value="price-low">
+                    Price: Low to High
+                  </SelectItem>
+
+                  <SelectItem value="price-high">
+                    Price: High to Low
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <LaptopCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-12">
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-white"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <Button className="text-white w-9 h-9">
+              1
+            </Button>
+
+            <Button variant="ghost" className="w-9 h-9">
+              2
+            </Button>
+
+            <Button variant="ghost" className="w-9 h-9">
+              3
+            </Button>
+
+            <span className="text-gray-400 px-1">
+              ...
+            </span>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-white"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default Laptops;
