@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const objectId = Joi.string().hex().length(24);
-const channels = Joi.array().items(Joi.string().valid('in_app', 'email', 'sms', 'push')).min(1).default(['in_app']);
+const channels = Joi.array().items(Joi.string().valid('in_app', 'email', 'sms', 'push')).min(1);
 
 const notificationSchema = Joi.object({
   recipient: objectId.required(),
@@ -20,7 +20,11 @@ const notificationSchema = Joi.object({
   type: Joi.string()
     .valid('system', 'listing', 'order', 'payment', 'message', 'review', 'promotion')
     .default('system'),
-  channels,
+  channels: Joi.when('templateKey', {
+    is: Joi.exist(),
+    then: channels,
+    otherwise: channels.default(['in_app'])
+  }),
   priority: Joi.string().valid('low', 'normal', 'high', 'urgent').default('normal'),
   scheduledFor: Joi.date().iso().greater('now'),
   metadata: Joi.object().default({})
@@ -43,7 +47,11 @@ const bulkNotificationSchema = Joi.object({
   type: Joi.string()
     .valid('system', 'listing', 'order', 'payment', 'message', 'review', 'promotion')
     .default('system'),
-  channels,
+  channels: Joi.when('templateKey', {
+    is: Joi.exist(),
+    then: channels,
+    otherwise: channels.default(['in_app'])
+  }),
   priority: Joi.string().valid('low', 'normal', 'high', 'urgent').default('normal'),
   scheduledFor: Joi.date().iso().greater('now'),
   metadata: Joi.object().default({})
