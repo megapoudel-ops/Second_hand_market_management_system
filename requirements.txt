@@ -1,0 +1,9 @@
+flask==3.0.3
+flask-cors==4.0.1
+flask-limiter==3.7.0
+flasgger==0.9.7.1
+pydantic[email]==1.10.17
+pymongo[tls]==4.7.3
+python-dotenv==1.0.1
+certifi==2024.6.2
+gunicorn==22.0.0
