@@ -1,183 +1,149 @@
-import { ShieldCheck } from "lucide-react"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Link, useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
-import { loginUser } from "../lib/api"
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { loginUser, getProfile, saveAuthenticatedUser } from "../lib/api";
 
 const Login = () => {
-    const navigate = useNavigate()
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [rememberMe, setRememberMe] = useState(false)
-    const [error, setError] = useState("")
-    const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
-    useEffect(() => {
-        const savedEmail = localStorage.getItem("rememberedEmail")
-        const savedPassword = localStorage.getItem("rememberedPassword")
-        if (savedEmail && savedPassword) {
-            setEmail(savedEmail)
-            setPassword(savedPassword)
-            setRememberMe(true)
-        }
-    }, [])
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError("")
+    try {
+      const data = await loginUser(email, password);
 
-        try {
-            const data = await loginUser(email, password)
+      if (!data.token) {
+        throw new Error(data.error || data.message || "Login failed");
+      }
 
-            if (data.token) {
-                localStorage.setItem("token", data.token)
-                window.dispatchEvent(new Event("auth-changed"))
+      localStorage.setItem("token", data.token);
 
-                if (rememberMe) {
-                    localStorage.setItem("rememberedEmail", email)
-                    localStorage.setItem("rememberedPassword", password)
-                } else {
-                    localStorage.removeItem("rememberedEmail")
-                    localStorage.removeItem("rememberedPassword")
-                }
+      let authUser = data.user;
+      if (!authUser) {
+        const profile = await getProfile(data.token);
+        authUser = profile.user;
+      }
 
-                navigate("/")
-            } else {
-                setError(data.error || data.message || "Login failed. Check your credentials.")
-            }
-        } catch {
-            setError("Something went wrong. Try again.")
-        } finally {
-            setLoading(false)
-        }
+      if (!authUser) {
+        throw new Error("Unable to load user profile after login.");
+      }
+
+      saveAuthenticatedUser(authUser);
+
+      if (rememberMe) {
+        localStorage.setItem("rememberMe", "true");
+      }
+
+      window.dispatchEvent(new Event("auth-changed"));
+      navigate("/profile");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return (
-        <div className="min-h-[calc(100svh-96px)] flex items-center justify-center px-4 py-10">
-            <div className="w-full max-w-7xl min-h-[680px] overflow-hidden rounded-2xl bg-white shadow-2xl grid md:grid-cols-2">
-
-                {/* Left Section */}
-                <div
-                    className="relative flex flex-col justify-between p-10 text-white"
-                    style={{ background: 'linear-gradient(to bottom right, #062c36, var(--primary-color))' }}
-                >
-                    <div>
-                        <h2 className="text-2xl font-medium mb-14">Second Sync</h2>
-                        <h1 className="text-5xl font-semibold leading-tight max-w-md">
-                            Precision meets fluid commerce.
-                        </h1>
-                        <p className="mt-6 text-neutral-300 text-sm max-w-sm leading-relaxed">
-                            Join our exclusive marketplace where luxury items find their second rhythm.
-                        </p>
-                    </div>
-                    <div className="space-y-4 mt-16">
-                        <div className="flex items-center gap-3 text-sm tracking-[0.2em] uppercase text-white/90">
-                            <ShieldCheck className="size-5" />
-                            Verified Members Only
-                        </div>
-                        <div className="flex items-center gap-3 text-sm tracking-[0.2em] uppercase text-white/90">
-                            <ShieldCheck className="size-5" />
-                            Secure Transactions
-                        </div>
-                    </div>
-                    <div className="absolute top-32 left-24 w-44 h-44 bg-white/10 blur-3xl rounded-full"></div>
-                </div>
-
-                {/* Right Section */}
-                <div className="flex items-center justify-center p-8 md:p-12 bg-white">
-                    <div className="w-full max-w-md">
-
-                        {/* Tabs */}
-                        <div className="flex border-b border-gray-200 mb-8">
-                            <Link to="/login"
-                                className="flex-1 text-center pb-3 text-sm font-semibold border-b-2"
-                                style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)' }}
-                            >
-                                LOGIN
-                            </Link>
-                            <Link to="/signup" className="text-center flex-1 pb-3 text-sm font-semibold text-gray-400">
-                                SIGN UP
-                            </Link>
-                        </div>
-
-                        {/* Error Message */}
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
-                                {error}
-                            </div>
-                        )}
-
-                        {/* Login Form */}
-                        <form className="space-y-5" onSubmit={handleSubmit}>
-
-                            {/* Email */}
-                            <div>
-                                <Label className="mb-2">Email Address</Label>
-                                <Input
-                                    type="email"
-                                    placeholder="name@company.com"
-                                    className="w-full py-6"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            {/* Password */}
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <Label>Password</Label>
-                                    <a href="#" className="text-sm hover:underline" style={{ color: 'var(--primary-color)' }}>
-                                        Forgot Password?
-                                    </a>
-                                </div>
-                                <Input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="w-full py-6"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            {/* Remember Me */}
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    className="rounded border-gray-300"
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                />
-                                <span className="text-sm text-gray-600">Remember Me</span>
-                            </div>
-
-                            {/* Submit */}
-                            <Button
-                                type="submit"
-                                className="w-full rounded-lg py-6"
-                                style={{ backgroundColor: 'var(--primary-color)' }}
-                                disabled={loading}
-                            >
-                                {loading ? "Logging in..." : "Log In"}
-                            </Button>
-                        </form>
-
-                        {/* Footer */}
-                        <p className="mt-10 text-center text-xs leading-relaxed text-gray-400">
-                            By continuing, you agree to Second Sync's
-                            <a href="#" className="font-medium text-gray-600"> Terms of Service </a>
-                            and
-                            <a href="#" className="font-medium text-gray-600"> Privacy Policy</a>.
-                        </p>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="w-full px-6 xl:px-0 py-8 min-h-screen flex items-center">
+      <div className="max-w-md w-full mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+          <p className="text-gray-500">Login to your Second Sync account</p>
         </div>
-    )
-}
 
-export default Login
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Email Input */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me */}
+          <div className="flex items-center justify-between">
+            <label className="flex items-center text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="mr-2 rounded"
+              />
+              Remember me
+            </label>
+            <Link to="#" className="text-sm text-[var(--primary-color)] hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Login Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2.5 bg-green-900 text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        {/* Sign Up Link */}
+        <p className="text-center text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link to="/auth" className="text-[var(--primary-color)] hover:underline font-medium">
+            Sign Up
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Login;

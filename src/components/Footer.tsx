@@ -21,32 +21,32 @@ const Footer = () => {
                     {/* Footer Links */}
                     <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-center">
                         <Link
-                            to="/about"
+                            to="/about-us"
                             className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
                         >
                             About Us
                         </Link>
 
-                        <Link
-                            to="/support"
-                            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                        <span
+                            className="text-sm text-gray-400 cursor-not-allowed"
+                            aria-disabled="true"
                         >
                             Support
-                        </Link>
+                        </span>
 
-                        <Link
-                            to="/terms"
-                            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                        <span
+                            className="text-sm text-gray-400 cursor-not-allowed"
+                            aria-disabled="true"
                         >
                             Terms of Service
-                        </Link>
+                        </span>
 
-                        <Link
-                            to="/privacy"
-                            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                        <span
+                            className="text-sm text-gray-400 cursor-not-allowed"
+                            aria-disabled="true"
                         >
                             Privacy Policy
-                        </Link>
+                        </span>
                     </div>
                 </div>
             </div>

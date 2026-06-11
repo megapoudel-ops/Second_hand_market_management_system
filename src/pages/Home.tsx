@@ -55,14 +55,6 @@ const Home = () => {
               >
                 Explore Marketplace
               </Link>
-
-              <Link
-                to="/"
-                className="text-(--primary-color) text-sm font-medium flex items-center gap-2"
-              >
-                Learn More
-                <ArrowRight className="size-4" />
-              </Link>
             </div>
           </div>
 
@@ -103,7 +95,7 @@ const Home = () => {
           </div>
 
           <Link
-            to="/categories"
+            to="/about-us"
             className="font-medium flex items-center gap-2 text-(--primary-color) text-sm"
           >
             View All Categories

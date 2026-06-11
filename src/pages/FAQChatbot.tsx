@@ -17,7 +17,8 @@ interface Session {
   messages: Message[];
 }
 
-const BACKEND_URL = "http://localhost:4000/chat";
+const BACKEND_URL = import.meta.env.VITE_FAQ_API_URL || "http://localhost:4000/chat";
+const FAQ_API_KEY = import.meta.env.VITE_FAQ_API_KEY || "";
 
 const FAQ_SUGGESTIONS = [
   { label: "Sell", text: "How do I sell an item?" },
@@ -52,6 +53,41 @@ function uid() {
 
 function getTime() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function buildFaqRequestPayload(message: string, history: Message[]) {
+  return {
+    message,
+    input: message,
+    prompt: message,
+    question: message,
+    messages: history.map((msg) => ({ role: msg.role === "user" ? "user" : "assistant", content: msg.text })),
+  };
+}
+
+function extractFaqResponse(data: any) {
+  if (!data) return null;
+  if (typeof data === "string") return data;
+
+  const candidates = [
+    data.reply,
+    data.answer,
+    data.message,
+    data.text,
+    data.output,
+    data.response,
+    data.result,
+    data.data?.reply,
+    data.data?.answer,
+    data.data?.message,
+    data.data?.text,
+    data.result?.reply,
+    data.result?.answer,
+    data.result?.message,
+    data.result?.text,
+  ];
+
+  return candidates.find((value) => typeof value === "string") || null;
 }
 
 function getLocalFaqAnswer(question: string) {
@@ -155,17 +191,32 @@ export default function FAQChatbot() {
     setLoading(true);
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (FAQ_API_KEY) {
+        headers["Authorization"] = `Bearer ${FAQ_API_KEY}`;
+        headers["x-api-key"] = FAQ_API_KEY;
+      }
+
+      const body = buildFaqRequestPayload(trimmed, activeSession?.messages ?? [userMsg]);
+
       const response = await fetch(BACKEND_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        headers,
+        body: JSON.stringify(body),
       });
 
-      if (!response.ok) throw new Error("FAQ backend error");
+      if (!response.ok) throw new Error(`FAQ backend error: ${response.status}`);
 
-      const data: { reply?: string } = await response.json();
-      addBotReply(sessionId, data.reply || getLocalFaqAnswer(trimmed));
-    } catch {
+      const data = await response.json().catch(() => null);
+      const reply = extractFaqResponse(data);
+
+      if (reply) {
+        addBotReply(sessionId, reply);
+      } else {
+        addBotReply(sessionId, getLocalFaqAnswer(trimmed));
+      }
+    } catch (err) {
+      console.warn("FAQ fetch error:", err);
       addBotReply(sessionId, getLocalFaqAnswer(trimmed));
     } finally {
       setLoading(false);

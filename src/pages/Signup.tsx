@@ -4,7 +4,7 @@ import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { signupUser } from "../lib/api"
+import { signupUser, getProfile, saveAuthenticatedUser } from "../lib/api"
 
 const AUTH_URL = import.meta.env.VITE_AUTH_API_URL
 
@@ -16,10 +16,19 @@ const Signup = () => {
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
 
+    const isValidGmail = (value: string) =>
+        /^[A-Za-z0-9._%+-]+@gmail\.com$/i.test(value.trim())
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError("")
+
+        if (!isValidGmail(email)) {
+            setError("Please sign up with a valid Gmail address.")
+            setLoading(false)
+            return
+        }
 
         try {
             // Step 1: Register
@@ -45,6 +54,14 @@ const Signup = () => {
 
                     if (loginData.token) {
                         localStorage.setItem("token", loginData.token)
+                        if (loginData.user) {
+                            saveAuthenticatedUser(loginData.user)
+                        } else {
+                            const profile = await getProfile(loginData.token)
+                            if (profile.user) {
+                                saveAuthenticatedUser(profile.user)
+                            }
+                        }
                         window.dispatchEvent(new Event("auth-changed"))
                         navigate("/")
                     } else {
@@ -56,6 +73,14 @@ const Signup = () => {
                 }
             } else if (data.token) {
                 localStorage.setItem("token", data.token)
+                if (data.user) {
+                    saveAuthenticatedUser(data.user)
+                } else {
+                    const profile = await getProfile(data.token)
+                    if (profile.user) {
+                        saveAuthenticatedUser(profile.user)
+                    }
+                }
                 window.dispatchEvent(new Event("auth-changed"))
                 navigate("/")
             } else {

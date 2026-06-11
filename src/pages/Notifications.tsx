@@ -1,238 +1,121 @@
-import {
-    CheckCheck,
-    MessageSquare,
-    Tag,
-    CheckCircle,
-    Info
-} from "lucide-react";
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import Header from "../components/Header";
+import Header from '../components/Header'
+import { getNotifications, markNotificationRead, markAllNotificationsRead } from '../lib/api'
 
 export default function Notifications() {
+    const navigate = useNavigate()
+    const [notifications, setNotifications] = useState<any[]>([])
+    const [selectedNotification, setSelectedNotification] = useState<any | null>(null)
+    const token = localStorage.getItem('token')
+
+    useEffect(() => {
+        if (!token) return
+
+        getNotifications(token, 1, 50)
+            .then((res) => {
+                if (res && res.data) setNotifications(res.data)
+            })
+            .catch(() => {})
+    }, [token])
+
+    const handleMarkAll = () => {
+        if (!token) return
+        markAllNotificationsRead(token).then(() => {
+            setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+            if (selectedNotification) {
+                setSelectedNotification({ ...selectedNotification, isRead: true })
+            }
+        })
+    }
+
+    const handleSelectNotification = async (notification: any) => {
+        if (!token) return
+        setSelectedNotification(notification)
+        if (!notification.isRead) {
+            const res = await markNotificationRead(token, notification._id)
+            if (res && res.data) {
+                setNotifications((prev) => prev.map((n) => (n._id === notification._id ? res.data : n)))
+                setSelectedNotification(res.data)
+                notification = res.data
+            }
+        }
+        if (notification?.data?.listingId) {
+            navigate(`/listings/${notification.data.listingId}`)
+            return
+        }
+    }
+
     return (
         <div className="w-full min-h-screen py-8 px-4 sm:px-6 xl:px-0">
+            <Header title="Notifications" subtitle="Stay updated with your latest activity and marketplace alerts." />
 
-            <Header
-                title="Notifications"
-                subtitle="Stay updated with your latest activity and marketplace alerts."
-            />
+            <div className="mt-8">
+                <div className="flex items-center justify-between mb-6">
+                    <button onClick={() => navigate(-1)} className="text-sm text-[var(--primary-color)] font-medium">← Back</button>
+                    <button onClick={handleMarkAll} className="text-sm text-[var(--primary-color)]">Mark all as read</button>
+                </div>
 
-            <div className="mt-8 space-y-8">
+                <div className="grid lg:grid-cols-[1.4fr_0.9fr] gap-6">
+                    <div className="space-y-4">
+                        {notifications.length === 0 && (
+                            <div className="text-gray-500">No notifications</div>
+                        )}
 
-                {/* TODAY */}
-                <div>
-
-                    {/* Section Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                        <h3 className="text-xs font-semibold text-gray-500 tracking-wide">
-                            TODAY
-                        </h3>
-
-                        <button className="flex items-center gap-2 text-sm text-(--primary-color)">
-                            <CheckCheck size={16} />
-                            Mark all as read
-                        </button>
+                        {notifications.map((n) => (
+                            <button
+                                type="button"
+                                key={n._id}
+                                onClick={() => handleSelectNotification(n)}
+                                className={`w-full text-left bg-white rounded-2xl p-5 border transition ${n.isRead ? 'border-gray-200 opacity-80' : 'border-[var(--primary-color)] shadow-sm'}`}
+                            >
+                                <div className="flex justify-between items-start gap-4">
+                                    <div>
+                                        <h4 className="font-medium text-gray-800">{n.title}</h4>
+                                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{n.message}</p>
+                                        <div className="text-xs text-gray-400 mt-2">{new Date(n.createdAt).toLocaleString()}</div>
+                                    </div>
+                                    {!n.isRead ? (
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold">New</span>
+                                    ) : null}
+                                </div>
+                            </button>
+                        ))}
                     </div>
 
                     <div className="space-y-4">
-
-                        {/* Price Drop */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-
-                                <div className="flex gap-4">
-                                    <Tag className="text-(--primary-color) p-3 bg-green-100 rounded-xl size-12 shrink-0" />
-
-                                    <div className="min-w-0">
-                                        <h4 className="font-medium">
-                                            Price Drop Alert
-                                        </h4>
-
-                                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                                            The{" "}
-                                            <span className="font-medium">
-                                                MacBook Pro M2
-                                            </span>{" "}
-                                            you're watching just dropped by{" "}
-                                            <span className="text-(--primary-color) font-medium">
-                                                Rs. 150
-                                            </span>.
-                                        </p>
-
-                                        <div className="flex flex-wrap gap-3 mt-4">
-                                            <button
-                                                className="px-4 py-2 rounded-md text-white text-sm"
-                                                style={{
-                                                    backgroundColor:
-                                                        "var(--primary-color)"
-                                                }}
-                                            >
-                                                View Item
-                                            </button>
-
-                                            <button className="px-4 py-2 rounded-md border text-sm">
-                                                Dismiss
-                                            </button>
+                        <div className="bg-white rounded-2xl p-6 border border-gray-100 min-h-[260px]">
+                            {selectedNotification ? (
+                                <>
+                                    <div className="flex items-center justify-between gap-4 mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-900">{selectedNotification.title}</h3>
+                                            <p className="text-xs text-gray-500 mt-1">{new Date(selectedNotification.createdAt).toLocaleString()}</p>
                                         </div>
+                                        <span className={`text-xs px-2 py-1 rounded-full ${selectedNotification.isRead ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'}`}>
+                                            {selectedNotification.isRead ? 'Read' : 'Unread'}
+                                        </span>
                                     </div>
-                                </div>
-
-                                <span className="text-xs text-gray-400 whitespace-nowrap">
-                                    2m ago
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Message */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-
-                                <div className="flex gap-4">
-                                    <MessageSquare className="p-3 bg-blue-100 rounded-xl size-12 shrink-0" />
-
-                                    <div className="min-w-0">
-                                        <h4 className="font-medium">
-                                            New Message
-                                        </h4>
-
-                                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                                            Sarah Jenkins sent you a message
-                                            regarding your{" "}
-                                            <span className="font-medium">
-                                                Eames Lounge Chair
-                                            </span>{" "}
-                                            listing.
-                                        </p>
-
-                                        <div className="bg-gray-100 rounded-md p-3 mt-4 text-sm text-gray-600 leading-relaxed">
-                                            "Is the leather still in good
-                                            condition or are there visible
-                                            cracks?"
+                                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                        {selectedNotification.message}
+                                    </div>
+                                    {selectedNotification.data && (
+                                        <div className="mt-6 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Change Details</h4>
+                                            <pre className="text-xs text-gray-600 whitespace-pre-wrap">{JSON.stringify(selectedNotification.data, null, 2)}</pre>
                                         </div>
-
-                                        <button className="mt-4 px-4 py-2 bg-black text-white rounded-md text-sm">
-                                            Reply Now
-                                        </button>
-                                    </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="flex h-full flex-col items-center justify-center text-gray-400">
+                                    <p className="text-sm">Select a notification to see details here.</p>
                                 </div>
-
-                                <span className="text-xs text-gray-400 whitespace-nowrap">
-                                    45m ago
-                                </span>
-                            </div>
+                            )}
                         </div>
                     </div>
-                </div>
-
-                {/* YESTERDAY */}
-                <div>
-
-                    <h3 className="text-xs font-semibold text-gray-500 tracking-wide mb-4">
-                        YESTERDAY
-                    </h3>
-
-                    <div className="space-y-4">
-
-                        {/* Payment */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-
-                                <div className="flex gap-4">
-                                    <CheckCircle className="size-12 p-3 bg-green-100 rounded-xl shrink-0" />
-
-                                    <div className="min-w-0">
-                                        <h4 className="font-medium">
-                                            Payment Successful
-                                        </h4>
-
-                                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                                            Your payment of{" "}
-                                            <span className="font-medium">
-                                                Rs. 45.00
-                                            </span>{" "}
-                                            for "Vintage Camera" has been
-                                            processed successfully.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <span className="text-xs text-gray-400 whitespace-nowrap">
-                                    Yesterday, 4:20 PM
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* System Update */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-
-                                <div className="flex gap-4">
-                                    <Info className="size-12 p-3 bg-gray-200 rounded-xl shrink-0" />
-
-                                    <div className="min-w-0">
-                                        <h4 className="font-medium">
-                                            System Update
-                                        </h4>
-
-                                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                                            Second Sync v2.4 is now live. Check
-                                            out the new asymmetric grid layouts
-                                            for better product visibility.
-                                        </p>
-
-                                        <button className="text-sm mt-3 text-(--primary-color)">
-                                            Read Release Notes
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <span className="text-xs text-gray-400 whitespace-nowrap">
-                                    Yesterday, 10:15 AM
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Sale */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-
-                                <div className="flex gap-4">
-                                    <Tag className="size-12 p-3 bg-orange-100 rounded-xl shrink-0" />
-
-                                    <div className="min-w-0">
-                                        <h4 className="font-medium">
-                                            You made a sale!
-                                        </h4>
-
-                                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                                            Your listing "Minimalist Oak Desk"
-                                            was purchased by @curator_jane.
-                                            Print your shipping label to
-                                            continue.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <span className="text-xs text-gray-400 whitespace-nowrap">
-                                    Nov 12, 2:45 PM
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer Button */}
-                <div className="flex justify-center pt-2">
-                    <button className="px-6 py-2.5 border rounded-lg text-sm hover:bg-gray-50 transition">
-                        View all history
-                    </button>
                 </div>
             </div>
         </div>
-    );
+    )
 }
